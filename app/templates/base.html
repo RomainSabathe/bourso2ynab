@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Bourso2YNAB</h1>
+
+    <form method="post" enctype="multipart/form-data">
+      <label for="input_file"
+        >Select your Boursorama transactions (see the tutorial below):</label
+      >
+      <input type="file" id="input_file" name="input_file" required />
+
+      <p>
+        I am:
+        <input
+          type="radio"
+          id="romain"
+          name="username"
+          value="romain"
+          checked="checked"
+        />
+        <label for="romain">Romain</label>
+        <input type="radio" id="ginette" name="username" value="ginette" />
+        <label for="ginette">ginette</label>
+      </p>
+
+      <p>
+        Account type:
+        <input
+          type="radio"
+          id="perso"
+          name="account_type"
+          value="perso"
+          checked="checked"
+        />
+        <label for="perso">Perso</label>
+        <input type="radio" id="joint" name="account_type" value="joint" />
+        <label for="joint">Joint</label>
+      </p>
+
+      <input type="submit" />
+    </form>
+
+    <br />
+    <br />
+
+    <h3>How to use this tool</h3>
+
+    <ol>
+      <li>
+        Go to
+        <a href="https://clients.boursorama.com/connexion">Boursorama</a> and
+        log in
+      </li>
+      <li>Select the account of interest</li>
+      <li>
+        At the top of the page, enter a date selection (you don't need it to
+        make it precise. YNAB will know about transactions it has seen before)
+        and click on "Rechercher" <br />
+        <br />
+        <img src={{ url_for('static', filename='date_range_example.png') }}
+        width="682px" />
+      </li>
+      <li>
+        At the bottom of the page, click on "Export au format CSV" and store the
+        file <br />
+        <br />
+        <img src={{ url_for('static', filename='export_csv_example.png') }}
+        width="682px" />
+      </li>
+      <li>
+        Choose this file in the form above and fill the rest of the information
+      </li>
+    </ol>
+  </body>
+</html>

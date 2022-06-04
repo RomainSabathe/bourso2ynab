@@ -26,7 +26,11 @@ import pandas as pd
     required=True,
 )
 @click.option("--upload/--no-upload", default=False)
-def main(filepath, username, account_type, upload):
+def cli(filepath, username, account_type, upload):
+    return convert_and_upload(filepath, username, account_type, upload)
+
+
+def convert_and_upload(filepath, username, account_type, upload):
     df = pd.read_csv(filepath, sep=";")
     formated_df = df.apply(format_transaction, axis="columns").query("Payee != 'Test'")
     remaining_idx = df.index.difference(formated_df.index)
@@ -242,4 +246,4 @@ def push_to_ynab(transactions: pd.DataFrame, account_id: str, budget_id: str):
 
 
 if __name__ == "__main__":
-    main()
+    cli()
