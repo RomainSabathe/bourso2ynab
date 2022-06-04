@@ -79,7 +79,22 @@ def format_transactions(df: pd.DataFrame, format_payee: bool = True) -> pd.DataF
     return formated_df
 
 
-def upload_transactions(df: pd.DataFrame, username: str, account_type: str):
+def upload_transactions(
+    df: pd.DataFrame, username: str, account_type: str, affect_all_users: bool = True
+):
+    if account_type == "joint" and affect_all_users:
+        # We want to make sure that I (me as a user) is affected last since this is
+        # what will be returned to the client.
+        # Here, I (me) have the username "username".
+        all_users_except_me = [x for x in ["romain", "ginette"] if x != username]
+        for username in [*all_users_except_me, username]:
+            output = push_to_ynab(
+                df,
+                account_id=get_ynab_id("account", username, account_type),
+                budget_id=get_ynab_id("budget", username),
+            )
+        return output
+
     return push_to_ynab(
         df,
         account_id=get_ynab_id("account", username, account_type),
@@ -163,7 +178,9 @@ def format_retrait(
     result = prog.match(row["label"])
     if result is None:
         # We try with a simpler, less capable pattern
-        pattern = r"^RETRAIT (DAB)? (?P<date>\d{2}/\d{2}/\d{2}) (?P<payee>.+) CB\*\d{4}$"
+        pattern = (
+            r"^RETRAIT (DAB)? (?P<date>\d{2}/\d{2}/\d{2}) (?P<payee>.+) CB\*\d{4}$"
+        )
         prog = re.compile(pattern)
         result = prog.match(row["label"])
         if result is None:
