@@ -1,6 +1,7 @@
 import os
 import json
 import html
+import logging
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -13,6 +14,7 @@ from bourso2ynab import (
     PayeeFormatter,
 )
 
+logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)
 load_dotenv()
 
 
@@ -34,15 +36,24 @@ def create_app(test_config=None):
                 return display_transactions()
             if request.form["form_type"] == "transactions_validation":
                 df = load_table_and_update_payee_formatter()
+                logging.info("Finished formatting transactions. Now sending to YNAB...")
                 api_response = upload_transactions(
                     df,
                     username=session["username"],
                     account_type=session["account_type"],
                 )
+                api_response = api_response.to_dict()
+
+                nb_new_entries = len(api_response["data"]["transactions"])
+                nb_duplicates = len(api_response["data"]["duplicate_import_ids"])
+                logging.info(
+                    f"User: {session['username']}, Account type: {session['account_type']} - "
+                    f"Sent {nb_new_entries + nb_duplicates} transactions with {nb_new_entries} being new."
+                )
                 session.clear()
             return render_template(
                 "base.html",
-                api_response=json.dumps(api_response.to_dict(), indent=4, default=str),
+                api_response=json.dumps(api_response, indent=4, default=str),
             )
 
         return render_template("base.html")
@@ -54,10 +65,15 @@ def display_transactions():
     df = read_bourso_transactions(filepath=request.files["input_file"].stream).pipe(
         format_transactions, format_payee=False
     )
+
     # We want to format the payee manually to properly update the DB.
     session["df"] = df.to_json()
     session["username"] = request.form["username"]
     session["account_type"] = request.form["account_type"]
+
+    logging.info(
+        f"User: {session['username']}, Account type: {session['account_type']} - Received {len(df)} transactions."
+    )
 
     # Replacing the Payee entries. Instead of showing `str`, we want to
     # show text boxes that can be edited by the user.
@@ -104,7 +120,9 @@ def load_table_and_update_payee_formatter():
         for old_payee, new_payee in df[["Payee", "NewPayee"]].values:
             if old_payee is None or new_payee == "":
                 continue
-            payee_formatter.add_formatting_rule(old_payee, new_payee)
+            is_new_rule = payee_formatter.add_formatting_rule(old_payee, new_payee)
+            if is_new_rule:
+                logging.info(f"New Payee rule: {old_payee} --> {new_payee}")
 
         # Updating the original df with the new Payee names.
         # This should be equivalent to doing:

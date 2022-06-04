@@ -26,8 +26,12 @@ class PayeeFormatter:
     def format(self, payee: str) -> str:
         return self.db.get(payee, payee)
 
-    def add_formatting_rule(self, unformatted_payee: str, formatted_payee: str) -> str:
+    def add_formatting_rule(self, unformatted_payee: str, formatted_payee: str) -> bool:
+        """Return True if it's a new rule. False otherwise."""
+        if unformatted_payee in self.db.keys():
+            return False
         self.db[unformatted_payee] = formatted_payee
+        return True
 
     def __enter__(self):
         return self
