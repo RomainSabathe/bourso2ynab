@@ -4,10 +4,13 @@ from pathlib import Path
 from datetime import datetime
 from typing import Literal, Optional, Union
 
-import ynab
 import click
 import numpy as np
 import pandas as pd
+import ynab_api as ynab
+from ynab_api.api.transactions_api import TransactionsApi
+from ynab_api.model.save_transaction import SaveTransaction
+from ynab_api.model.save_transactions_wrapper import SaveTransactionsWrapper
 
 #  TODO: this import doesn't work :(
 # from .payee_formatter import PayeeFormatter
@@ -41,7 +44,7 @@ class PayeeFormatter:
 @click.option(
     "-i", "--input", "input_filepath", type=click.Path(exists=True), required=True
 )
-@click.option("-o", "--output", "output_filepath", required=True)
+@click.option("-o", "--output", "output_filepath", required=False)
 @click.option(
     "-u",
     "username",
@@ -57,7 +60,8 @@ class PayeeFormatter:
 @click.option("--upload/--no-upload", default=False)
 def cli(input_filepath, output_filepath, username, account_type, upload):
     df = read_bourso_transactions(input_filepath).pipe(format_transactions)
-    df.to_csv(output_filepath, index=False)
+    if output_filepath is not None:
+        df.to_csv(output_filepath, index=False)
     if upload:
         upload_transactions(df, username=username, account_type=account_type)
 
@@ -245,17 +249,29 @@ def push_to_ynab(transactions: pd.DataFrame, account_id: str, budget_id: str):
     transactions = transactions.pipe(add_import_ids).replace(np.nan, None)
 
     configuration = ynab.Configuration()
-    configuration.api_key[
-        "Authorization"
-    ] = "***REMOVED***"
-    configuration.api_key_prefix["Authorization"] = "Bearer"
-    api = ynab.TransactionsApi(ynab.ApiClient(configuration))
+    configuration.api_key["bearer"] = "***REMOVED***"
+    configuration.api_key_prefix["bearer"] = "Bearer"
+    api = TransactionsApi(ynab.ApiClient(configuration))
 
-    ynab_transactions = ynab.BulkTransactions(
-        [
-            ynab.SaveTransaction(
+    df = (
+        pd.DataFrame(
+            api.get_transactions_by_account(budget_id, account_id).to_dict()["data"][
+                "transactions"
+            ]
+        )
+        .assign(
+            is_faulty_import=lambda df: df.import_id.apply(
+                lambda x: False if pd.isnull(x) else "00:00:00" in x
+            )
+        )
+        .query("is_faulty_import == True")
+    )
+
+    ynab_transactions = SaveTransactionsWrapper(
+        transactions=[
+            SaveTransaction(
                 account_id=account_id,
-                date=transaction["Date"],
+                date=datetime.strptime(transaction["Date"], "%Y-%m-%d").date(),
                 amount=int(transaction["Amount"] * 1_000),
                 payee_name=transaction["Payee"],
                 memo=transaction["Memo"],
@@ -267,7 +283,7 @@ def push_to_ynab(transactions: pd.DataFrame, account_id: str, budget_id: str):
     )
 
     try:
-        return api.bulk_create_transactions(budget_id, ynab_transactions)
+        return api.create_transaction(budget_id, ynab_transactions)
     except ynab.rest.ApiException as e:
         print("Exception when calling TransactionsApi->create_transaction: %s\n" % e)
 

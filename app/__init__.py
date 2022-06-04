@@ -39,7 +39,7 @@ def create_app(test_config=None):
                 session.clear()
             return render_template(
                 "base.html",
-                api_response=json.dumps(api_response.to_dict(), indent=4),
+                api_response=json.dumps(api_response.to_dict(), indent=4, default=str),
             )
 
         return render_template("base.html")
@@ -81,7 +81,9 @@ def display_transactions():
 
 
 def load_table_and_update_payee_formatter():
-    df = pd.read_json(session["df"])
+    df = pd.read_json(session["df"], convert_dates=False)
+    # convert_dates=False, otherwise creates datetime items. We just want date to obtain
+    # correct import ids.
 
     # Creating a dataframe out of the form inputs.
     updated_payee_names = []
