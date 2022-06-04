@@ -10,6 +10,33 @@ import click
 import numpy as np
 import pandas as pd
 
+#  TODO: this import doesn't work :(
+# from .payee_formatter import PayeeFormatter
+class PayeeFormatter:
+    def __init__(self):
+        self._db_filepath = Path("bourso2ynab/payee_name_fix.json")
+        self._load_db()
+
+    def format(self, payee: str) -> str:
+        return self.db.get(payee, payee)
+
+    def add_formatting_rule(self, unformatted_payee: str, formatted_payee: str) -> str:
+        self.db[unformatted_payee] = formatted_payee
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self._db_filepath.write_text(
+            json.dumps(self.db, indent=4, sort_keys=True, ensure_ascii=False),
+            encoding="utf-8",
+        )
+
+    def _load_db(self):
+        # TODO: find a better way to handle resources
+        # TODO: even better: put this into an actual database.
+        self.db = json.loads(self._db_filepath.read_text(encoding="utf-8"))
+
 
 @click.command()
 @click.option(
@@ -40,8 +67,12 @@ def read_bourso_transactions(filepath: Union[str, Path]) -> pd.DataFrame:
     return pd.read_csv(filepath, sep=";")
 
 
-def format_transactions(df: pd.DataFrame) -> pd.DataFrame:
-    formated_df = df.apply(format_transaction, axis="columns").query("Payee != 'Test'")
+def format_transactions(df: pd.DataFrame, format_payee: bool = True) -> pd.DataFrame:
+    formated_df = df.apply(
+        format_transaction,
+        payee_formatter=PayeeFormatter() if format_payee else None,
+        axis="columns",
+    )
     remaining_idx = df.index.difference(formated_df.index)
     df = df.loc[remaining_idx]
     assert len(df) == 0
@@ -56,7 +87,7 @@ def upload_transactions(df: pd.DataFrame, username: str, account_type: str):
     )
 
 
-def format_vir(row: pd.Series) -> pd.Series:
+def format_vir(row: pd.Series, payee_formatter: Optional[PayeeFormatter]) -> pd.Series:
     pattern = r"^(?P<vir_type>(VIR)|(PRLV))( (INST)| (SEPA))? ((MLE )|(MR ))?(?P<description>[\w| |\d|\(|\)|'|:|-]+)$"
     prog = re.compile(pattern)
     result = prog.match(row["label"])
@@ -74,12 +105,8 @@ def format_vir(row: pd.Series) -> pd.Series:
         extra = {"Memo": description}
         if description in ["Energie", "Loyer"]:
             extra.update({"Payee": "ginette Georges"})
-    if "Payee" in extra.keys():
-        extra["Payee"] = extra["Payee"].replace(
-            "***REMOVED*** ***REMOVED*** Ac", "***REMOVED***"
-        )
-    if "Payee" in extra.keys():
-        extra["Payee"] = extra["Payee"].replace("Alan Sa", "Alan")
+    if "Payee" in extra.keys() and payee_formatter is not None:
+        extra["Payee"] = payee_formatter.format(extra["Payee"])
 
     entry = {
         "Date": row["dateVal"],
@@ -89,7 +116,9 @@ def format_vir(row: pd.Series) -> pd.Series:
     return pd.Series(entry)
 
 
-def format_carte(row: pd.Series) -> pd.Series:
+def format_carte(
+    row: pd.Series, payee_formatter: Optional[PayeeFormatter]
+) -> pd.Series:
     pattern = r"^CARTE (?P<date>\d{2}/\d{2}/\d{2}) (ZTL)?\*?(?P<payee>\d?([A-Za-z]| |\_|\.|&|-|\*|')+)I?\d? ?(\([A-Za-z]+\)?)? ?(GB)?\d*(SC)? ?\d?(LTD)? ?CB\*\d{4}$"
     prog = re.compile(pattern)
     result = prog.match(row["label"])
@@ -99,63 +128,15 @@ def format_carte(row: pd.Series) -> pd.Series:
     date = datetime.strptime(result["date"], "%d/%m/%y")
     entry = {
         "Date": date.strftime("%Y-%m-%d"),
-        "Payee": result["payee"].replace("_", " ").strip().title(),
+        "Payee": result["payee"].replace("_", " ").replace("*", "").strip().title(),
         "Memo": "",
         "Amount": float(row["amount"].replace(",", ".").replace(" ", "")),
     }
     if "paypal" in entry["Payee"].lower():
         entry["Payee"] = entry["Payee"].replace("Paypal ", "")
         entry["Memo"] += " (via Paypal)"
-    entry["Payee"] = (
-        entry["Payee"]
-        .replace("*", "")
-        .replace("A. Miam Miam", "Alain Miam Miam")
-        .replace("Alan Sa", "Alan")
-        .replace("Amagicom", "Mullvad")
-        .replace("Amazon Eu Sarl", "Amazon")
-        .replace("Amazon Payments", "Amazon")
-        .replace("Aylan", "La Margherita Michel Bizot")
-        .replace("Camping L Estela", "Camping l'Estela")
-        .replace("Carrefour Expres", "Carrefour Express")
-        .replace("Concessions Gare", "Paul")
-        .replace("Curb Svc Long Isa", "Curb Mobility")
-        .replace("Eurostar Internat", "Eurostar")
-        .replace("Fnac Sc", "Fnac")
-        .replace("France Billetvad", "France Billet")
-        .replace("Lattice L", "The Secret City")
-        .replace("Monop", "Monoprix")
-        .replace("Netflix.Com", "Netflix")
-        .replace("Paddle.Co", "ProjectionLab")
-        .replace("Phie Met M Bizot", "Pharmacie du Metro Michel Bizot")
-        .replace("Ratp", "RATP")
-        .replace("Sarl T.L.N.", "Camping Les Terrasses du Lac")
-        .replace("Sc-Essentiel Da", "L'Essentiel")
-        .replace("Sc-Ravitailleur", "Le Ravitailleur")
-        .replace("Sc-Vieuxcamp Ec", "Au Vieux Campeur")
-        .replace("Shetland Fringan", "J'peux pas J'ai poney")
-        .replace("Sncf Tgv.Com", "SNCF")
-        .replace("Sncf Web Mobile", "SNCF")
-        .replace("Sumup Docteur R", "Dr Robert Thebault")
-        .replace("Sumup Gourmandi", "Gourmandises Mexicaines")
-        .replace("Tfl Travel Ch", "TFL")
-        .replace("The Frog & Brit", "The Frog & British Library")
-        .replace("Ugc Bornes", "UGC")
-        .replace("Vieux Campeur", "Au Vieux Campeur")
-        .replace("ZtlCeylon", "Pavilion Cafe")
-        .replace("Railway", "Railway Tavern")
-        .replace("Iz Tossed", "Tossed")
-        .replace("Tfl Cycle Hire", "TFL Cycle Hire")
-        .replace("Farmer J", "Farmer J")
-        .replace("The Wellington Pu", "The Wellington Pub")
-        .replace("Marks&Spencer Plc", "Marks & Spencer")
-        .replace("Fuller Smith & Tu", "The Astronomer")
-        .replace("***REMOVED***.K", "***REMOVED*** ***REMOVED***")
-        .replace("Pharm Republique", "Pharmacie de la Place de la République")
-        .replace("Velib Metropole", "Velib Metropole")
-        # Dirty
-        .replace("Au Au Vieux Campeur", "Au Vieux Campeur")
-        .replace("Monoprixrix", "Monoprix")
-    )
+    if payee_formatter is not None:
+        entry["Payee"] = payee_formatter.format(entry["Payee"])
 
     if entry["Payee"] == "Pavilion Cafe":
         entry["Memo"] += " (in Victoria Park)"
@@ -164,7 +145,9 @@ def format_carte(row: pd.Series) -> pd.Series:
     return pd.Series(entry)
 
 
-def format_retrait(row: pd.Series) -> pd.Series:
+def format_retrait(
+    row: pd.Series, payee_formatter: Optional[PayeeFormatter]
+) -> pd.Series:
     pattern = r"^RETRAIT (DAB)? (?P<date>\d{2}/\d{2}/\d{2}) \d*(?P<payee>([A-Za-z]| |\_|\.|&|-|\*|')+)I?\d? (GB)?\d* ?(LTD)? ?CB\*\d{4}$"
     prog = re.compile(pattern)
     result = prog.match(row["label"])
@@ -181,13 +164,17 @@ def format_retrait(row: pd.Series) -> pd.Series:
     return pd.Series(entry)
 
 
-def format_transaction(row: pd.Series) -> pd.Series:
+def format_transaction(
+    row: pd.Series, payee_formatter: Optional[PayeeFormatter]
+) -> pd.Series:
+    kwargs = {"payee_formatter": payee_formatter}
+
     if row["label"].startswith("CARTE"):
-        return format_carte(row)
+        return format_carte(row, **kwargs)
     elif row["label"].startswith("VIR") or row["label"].startswith("PRLV"):
-        return format_vir(row)
+        return format_vir(row, **kwargs)
     elif row["label"].startswith("RETRAIT"):
-        return format_retrait(row)
+        return format_retrait(row, **kwargs)
     raise Exception("Unknown transaction type")
 
 
