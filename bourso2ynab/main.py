@@ -87,7 +87,7 @@ def format_transactions(df: pd.DataFrame, format_payee: bool = True) -> pd.DataF
     remaining_idx = df.index.difference(formated_df.index)
     df = df.loc[remaining_idx]
     assert len(df) == 0
-    return formated_df
+    return formated_df.sort_values(["Date", "Payee", "Amount"], ascending=False)
 
 
 def upload_transactions(
