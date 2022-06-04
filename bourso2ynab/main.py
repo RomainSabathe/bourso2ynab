@@ -1,3 +1,4 @@
+import os
 import re
 import json
 from pathlib import Path
@@ -8,9 +9,12 @@ import click
 import numpy as np
 import pandas as pd
 import ynab_api as ynab
+from dotenv import load_dotenv
 from ynab_api.api.transactions_api import TransactionsApi
 from ynab_api.model.save_transaction import SaveTransaction
 from ynab_api.model.save_transactions_wrapper import SaveTransactionsWrapper
+
+load_dotenv()
 
 #  TODO: this import doesn't work :(
 # from .payee_formatter import PayeeFormatter
@@ -249,7 +253,7 @@ def push_to_ynab(transactions: pd.DataFrame, account_id: str, budget_id: str):
     transactions = transactions.pipe(add_import_ids).replace(np.nan, None)
 
     configuration = ynab.Configuration()
-    configuration.api_key["bearer"] = "***REMOVED***"
+    configuration.api_key["bearer"] = os.environ["YNAB_API_KEY"]
     configuration.api_key_prefix["bearer"] = "Bearer"
     api = TransactionsApi(ynab.ApiClient(configuration))
 
