@@ -101,7 +101,12 @@
           <input type="submit" />
         </form>
 
-        {% endif %}
+        {% elif api_response is defined %}
+        <p>All done!</p>
+        <pre>
+           {{ api_response | safe }}
+        </pre>
+         {% endif %}
       </div>
     </div>
   </body>

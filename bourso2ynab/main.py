@@ -80,7 +80,7 @@ def format_transactions(df: pd.DataFrame, format_payee: bool = True) -> pd.DataF
 
 
 def upload_transactions(df: pd.DataFrame, username: str, account_type: str):
-    push_to_ynab(
+    return push_to_ynab(
         df,
         account_id=get_ynab_id("account", username, account_type),
         budget_id=get_ynab_id("budget", username),
@@ -92,7 +92,12 @@ def format_vir(row: pd.Series, payee_formatter: Optional[PayeeFormatter]) -> pd.
     prog = re.compile(pattern)
     result = prog.match(row["label"])
     if result is None:
-        raise Exception(f"Can't parse Vir transaction: {row['label']}")
+        # We try with a simpler, less capable pattern
+        pattern = r"^(?P<vir_type>(VIR)|(PRLV)) (?P<description>.+)$"
+        prog = re.compile(pattern)
+        result = prog.match(row["label"])
+        if result is None:
+            raise Exception(f"Can't parse Carte transaction: {row['label']}")
     description = result.group("description")
     # Boursorama indicates the sender or receiver of the transfer when the description
     # is all uppercase.
@@ -123,7 +128,12 @@ def format_carte(
     prog = re.compile(pattern)
     result = prog.match(row["label"])
     if result is None:
-        raise Exception(f"Can't parse Carte transaction: {row['label']}")
+        # We try with a simpler, less capable pattern
+        pattern = r"^CARTE (?P<date>\d{2}/\d{2}/\d{2}) (?P<payee>.+) CB\*\d{4}$"
+        prog = re.compile(pattern)
+        result = prog.match(row["label"])
+        if result is None:
+            raise Exception(f"Can't parse Carte transaction: {row['label']}")
     result = result.groupdict()
     date = datetime.strptime(result["date"], "%d/%m/%y")
     entry = {
@@ -152,7 +162,12 @@ def format_retrait(
     prog = re.compile(pattern)
     result = prog.match(row["label"])
     if result is None:
-        raise Exception(f"Can't parse Retrait transaction: {row['label']}")
+        # We try with a simpler, less capable pattern
+        pattern = r"^RETRAIT (DAB)? (?P<date>\d{2}/\d{2}/\d{2}) (?P<payee>.+) CB\*\d{4}$"
+        prog = re.compile(pattern)
+        result = prog.match(row["label"])
+        if result is None:
+            raise Exception(f"Can't parse Retrait transaction: {row['label']}")
     result = result.groupdict()
     date = datetime.strptime(result["date"], "%d/%m/%y")
     entry = {
@@ -236,8 +251,7 @@ def push_to_ynab(transactions: pd.DataFrame, account_id: str, budget_id: str):
     )
 
     try:
-        api_response = api.bulk_create_transactions(budget_id, ynab_transactions)
-        print(api_response)
+        return api.bulk_create_transactions(budget_id, ynab_transactions)
     except ynab.rest.ApiException as e:
         print("Exception when calling TransactionsApi->create_transaction: %s\n" % e)
 
