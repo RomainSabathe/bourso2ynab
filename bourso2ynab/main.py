@@ -3,7 +3,7 @@ import sys
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 
 import ynab
 import click
@@ -12,7 +12,10 @@ import pandas as pd
 
 
 @click.command()
-@click.option("-i", "filepath", type=click.Path(exists=True), required=True)
+@click.option(
+    "-i", "--input", "input_filepath", type=click.Path(exists=True), required=True
+)
+@click.option("-o", "--output", "output_filepath", required=True)
 @click.option(
     "-u",
     "username",
@@ -26,25 +29,31 @@ import pandas as pd
     required=True,
 )
 @click.option("--upload/--no-upload", default=False)
-def cli(filepath, username, account_type, upload):
-    return convert_and_upload(filepath, username, account_type, upload)
+def cli(input_filepath, output_filepath, username, account_type, upload):
+    df = read_bourso_transactions(input_filepath).pipe(format_transactions)
+    df.to_csv(output_filepath, index=False)
+    if upload:
+        upload_transactions(df, username=username, account_type=account_type)
 
 
-def convert_and_upload(filepath, username, account_type, upload):
-    df = pd.read_csv(filepath, sep=";")
+def read_bourso_transactions(filepath: Union[str, Path]) -> pd.DataFrame:
+    return pd.read_csv(filepath, sep=";")
+
+
+def format_transactions(df: pd.DataFrame) -> pd.DataFrame:
     formated_df = df.apply(format_transaction, axis="columns").query("Payee != 'Test'")
     remaining_idx = df.index.difference(formated_df.index)
     df = df.loc[remaining_idx]
     assert len(df) == 0
-    formated_df.to_csv(
-        "C:/Users/Romain/Downloads/formated_transactions.csv", index=False
+    return formated_df
+
+
+def upload_transactions(df: pd.DataFrame, username: str, account_type: str):
+    push_to_ynab(
+        df,
+        account_id=get_ynab_id("account", username, account_type),
+        budget_id=get_ynab_id("budget", username),
     )
-    if upload:
-        push_to_ynab(
-            formated_df,
-            account_id=get_ynab_id("account", username, account_type),
-            budget_id=get_ynab_id("budget", username),
-        )
 
 
 def format_vir(row: pd.Series) -> pd.Series:
@@ -198,6 +207,7 @@ def add_import_ids(df: pd.DataFrame) -> pd.DataFrame:
             # Why i + 1? Because YNAB import IDs start counting at 1.
 
     return df
+
 
 def get_ynab_id(
     id_type: Literal["budget", "account"],
