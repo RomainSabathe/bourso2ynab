@@ -284,6 +284,7 @@ def push_to_ynab(transactions: pd.DataFrame, account_id: str, budget_id: str):
                 payee_name=transaction["Payee"],
                 memo=transaction["Memo"],
                 approved=True,
+                cleared="cleared",
                 import_id=transaction["import_id"],
             )
             for _, transaction in transactions.iterrows()
