@@ -52,6 +52,7 @@ def test_can_create_carte_transaction_from_pandas_with_formatting():
     assert transaction.amount == 7.5
     assert transaction.memo is None
 
+
 def test_can_create_vir_transaction_from_pandas_with_formatting_when_payee_is_available():
     label = "VIR Virement de Monsieur MACHIN"
     entry = pd.Series({"dateVal": "2022-06-11", "amount": "7.5", "label": label})
@@ -62,6 +63,7 @@ def test_can_create_vir_transaction_from_pandas_with_formatting_when_payee_is_av
     assert transaction.payee == "Monsieur Machin"
     assert transaction.amount == 7.5
     assert transaction.memo is None
+
 
 def test_can_create_vir_transaction_from_pandas_with_formatting_when_payee_is_not_available():
     label = "VIR Blabla"
@@ -119,6 +121,7 @@ def test_infer_carte_transaction_from_label():
     assert transaction.payee == "Sncf Internet"
     assert transaction.amount is None
     assert transaction.memo is None
+
 
 def test_infer_vir_transaction_from_label():
     label = "VIR Virement de Monsieur MACHIN"
