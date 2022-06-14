@@ -261,20 +261,6 @@ def push_to_ynab(transactions: pd.DataFrame, account_id: str, budget_id: str):
     configuration.api_key_prefix["bearer"] = "Bearer"
     api = TransactionsApi(ynab.ApiClient(configuration))
 
-    df = (
-        pd.DataFrame(
-            api.get_transactions_by_account(budget_id, account_id).to_dict()["data"][
-                "transactions"
-            ]
-        )
-        .assign(
-            is_faulty_import=lambda df: df.import_id.apply(
-                lambda x: False if pd.isnull(x) else "00:00:00" in x
-            )
-        )
-        .query("is_faulty_import == True")
-    )
-
     ynab_transactions = SaveTransactionsWrapper(
         transactions=[
             SaveTransaction(
