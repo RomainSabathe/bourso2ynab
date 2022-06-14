@@ -1,5 +1,5 @@
 import re
-from typing import Literal
+from typing import Literal, Union
 from dataclasses import dataclass
 from datetime import date, datetime
 
@@ -41,9 +41,17 @@ class Transaction:
             return Transaction(
                 type=infer_transaction_type(row.label),
                 date=datetime.strptime(row.dateVal, "%Y-%m-%d").date(),
-                amount=float(row.amount),
+                amount=format_amount(row.amount),
                 payee=row.label,
             )
+
+        tmp_formatted_transaction = Transaction.from_label(row.label)
+        return Transaction(
+            type=tmp_formatted_transaction.type,
+            date=tmp_formatted_transaction.date,
+            payee=tmp_formatted_transaction.payee,
+            amount=format_amount(row.amount),
+        )
 
     @staticmethod
     def from_label(label: str):
@@ -54,6 +62,10 @@ class Transaction:
             payee=result["payee"].strip().title(),
             date=datetime.strptime(result["date"], "%d/%m/%y").date(),
         )
+
+
+def format_amount(amount: Union[float, str]) -> float:
+    return float(amount)
 
 
 def is_valid_bourso_entry(row: pd.Series) -> bool:

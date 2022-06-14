@@ -29,7 +29,9 @@ def test_can_create_transaction():
 
 
 def test_can_create_transaction_from_pandas_without_formatting():
-    entry = pd.Series({"dateVal": "2022-06-14", "amount": "7.5", "label": "VIR Transaction"})
+    entry = pd.Series(
+        {"dateVal": "2022-06-14", "amount": "7.5", "label": "VIR Transaction"}
+    )
     transaction = Transaction.from_pandas(entry, format=False)
 
     assert transaction.date == date(year=2022, month=6, day=14)
@@ -37,6 +39,18 @@ def test_can_create_transaction_from_pandas_without_formatting():
     assert transaction.payee == "VIR Transaction"
     assert transaction.memo is None
     assert transaction.type == "VIR"
+
+
+def test_can_create_transaction_from_pandas_with_formatting():
+    label = "CARTE 09/06/22 SNCF INTERNET CB*5537"
+    entry = pd.Series({"dateVal": "2022-06-11", "amount": "7.5", "label": label})
+    transaction = Transaction.from_pandas(entry, format=True)
+
+    assert transaction.type == "CARTE"
+    assert transaction.date == date(year=2022, month=6, day=9)
+    assert transaction.payee == "Sncf Internet"
+    assert transaction.amount == 7.5
+    assert transaction.memo is None
 
 
 def test_create_transaction_from_pandas_fails():
