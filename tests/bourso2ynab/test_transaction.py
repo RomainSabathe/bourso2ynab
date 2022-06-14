@@ -41,7 +41,7 @@ def test_can_create_transaction_from_pandas_without_formatting():
     assert transaction.type == "VIR"
 
 
-def test_can_create_transaction_from_pandas_with_formatting():
+def test_can_create_carte_transaction_from_pandas_with_formatting():
     label = "CARTE 09/06/22 SNCF INTERNET CB*5537"
     entry = pd.Series({"dateVal": "2022-06-11", "amount": "7.5", "label": label})
     transaction = Transaction.from_pandas(entry, format=True)
@@ -51,6 +51,28 @@ def test_can_create_transaction_from_pandas_with_formatting():
     assert transaction.payee == "Sncf Internet"
     assert transaction.amount == 7.5
     assert transaction.memo is None
+
+def test_can_create_vir_transaction_from_pandas_with_formatting_when_payee_is_available():
+    label = "VIR Virement de Monsieur MACHIN"
+    entry = pd.Series({"dateVal": "2022-06-11", "amount": "7.5", "label": label})
+    transaction = Transaction.from_pandas(entry, format=True)
+
+    assert transaction.type == "VIR"
+    assert transaction.date == date(year=2022, month=6, day=11)
+    assert transaction.payee == "Monsieur Machin"
+    assert transaction.amount == 7.5
+    assert transaction.memo is None
+
+def test_can_create_vir_transaction_from_pandas_with_formatting_when_payee_is_not_available():
+    label = "VIR Blabla"
+    entry = pd.Series({"dateVal": "2022-06-11", "amount": "7.5", "label": label})
+    transaction = Transaction.from_pandas(entry, format=True)
+
+    assert transaction.type == "VIR"
+    assert transaction.date == date(year=2022, month=6, day=11)
+    assert transaction.payee is None
+    assert transaction.amount == 7.5
+    assert transaction.memo == "Blabla"
 
 
 def test_create_transaction_from_pandas_fails():
@@ -88,12 +110,22 @@ def test_is_valid_bourso_entry():
     assert not is_valid_bourso_entry(entry)
 
 
-def test_infer_transaction_from_label():
+def test_infer_carte_transaction_from_label():
     label = "CARTE 09/06/22 SNCF INTERNET CB*5537"
 
     transaction = Transaction.from_label(label)
     assert transaction.type == "CARTE"
     assert transaction.date == date(year=2022, month=6, day=9)
     assert transaction.payee == "Sncf Internet"
+    assert transaction.amount is None
+    assert transaction.memo is None
+
+def test_infer_vir_transaction_from_label():
+    label = "VIR Virement de Monsieur MACHIN"
+
+    transaction = Transaction.from_label(label)
+    assert transaction.type == "VIR"
+    assert transaction.date is None
+    assert transaction.payee == "Monsieur Machin"
     assert transaction.amount is None
     assert transaction.memo is None
