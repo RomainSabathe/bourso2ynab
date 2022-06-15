@@ -132,3 +132,41 @@ def test_infer_vir_transaction_from_label():
     assert transaction.payee == "Monsieur Machin"
     assert transaction.amount is None
     assert transaction.memo is None
+
+
+@pytest.mark.parametrize(
+    ("label", "expected_payee"),
+    [
+        ("CARTE 01/01/70 TFL TRAVEL CH CB*1040", "Tfl Travel Ch"),
+        ("CARTE 01/01/70 M&S SIMPLY FOOD - CB*1040", "M&S Simply Food"),
+        ("CARTE 01/01/70 ZTL*NM BURGER OPS CB*1040", "Nm Burger Ops"),
+        ("CARTE 01/01/70 ZTL*Redemption Ro CB*1040", "Redemption Ro"),
+        ("CARTE 01/01/70 IZ *TOSSED CB*1040", "Tossed"),
+        ("CARTE 01/01/70 MARKS&SPENCER PLC CB*1040", "Marks&Spencer"),
+        ("CARTE 01/01/70 FULLER SMITH & TU CB*1040", "Fuller Smith & Tu"),
+        # ("CARTE 01/01/70 PAYPAL ****REMOVED***.K CB*1040", None),
+        ("CARTE 01/01/70 PHARM REPUBLIQUE2 CB*1040", "Pharm Republique"),
+        ("CARTE 01/01/70 VELIB METROPOLE 2 CB*1040", "Velib Metropole"),
+        ("CARTE 01/01/70 FRANPRIX 5196 CB*1040", "Franprix"),
+        # ("CARTE 01/01/70 RELAY 340356SC 4 CB*1040", "Relay"),
+        ("CARTE 01/01/70 SARL T.L.N. CB*1040", "Sarl T.L.N."),
+        ("CARTE 01/01/70 FNAC SC 4 CB*1040", "Fnac"),
+        # ("VIR INST ALAN SA", None),
+        # ("VIR Loyer", None),
+        ("CARTE 01/01/70 SC-ESSENTIEL DA CB*1040", "Sc-Essentiel Da"),
+        ("CARTE 01/01/70 VIEUX CAMPEUR 4 CB*1040", "Vieux Campeur"),
+        ("CARTE 01/01/70 PHIE MET M BIZOT2 CB*1040", "Phie Met M Bizot"),
+        ("CARTE 01/01/70 AMAZON PAYMENTS 2 CB*1040", "Amazon Payments"),
+        # ("CARTE 01/01/70 SUMUP *DOCTEUR R CB*1040", None),
+        # ("VIR Remboursement chasse aux oeufs e", None),
+        # ("VIR Remboursemnt loyer (63) electric", None),
+        # ("VIR Exploding the budget at L'Ours :D", None),
+        # ("VIR Financement pour l'Ours", None),
+        # ("CARTE 01/01/70 DOCKYARDS_TICKETS CB*1040", None),
+        # ("CARTE 01/01/70 ECGCOSTA4017507 CB*1040", None),
+        # ("CARTE 01/01/70 SUMUP *MACO CB*1040", None),
+    ],
+)
+def test_transaction_correctly_parses_label(label, expected_payee):
+    transaction = Transaction.from_label(label)
+    assert transaction.payee == expected_payee

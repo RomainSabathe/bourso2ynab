@@ -19,7 +19,13 @@ TransactionType = Literal["VIR", "CARTE", "RETRAIT"]
 TRANSACTION_LABEL_PATTERN = (
     r"^(?P<transaction_type>((CARTE)|(VIR)|(RETRAIT)))\s?"
     r"(?P<date>\d{2}/\d{2}/\d{2})?\s?"
+    r"(ZTL\*)?"
+    r"(IZ \*)?"
     r"(?P<payee>.+?)\s?"
+    r"(SC\s)?"
+    r"(PLC\s)?"
+    r"(\d+\s)?"
+    r"(-\s)?"
     r"(CB\*\d{4})?$"
 ).strip()
 TRANSACTION_LABEL_PROG = re.compile(TRANSACTION_LABEL_PATTERN)
@@ -69,7 +75,7 @@ class Transaction:
         formatted_result = {
             "date": format_date_from_label(result.get("date")),
             "payee": format_payee_from_label(result.get("payee"), is_VIR=is_VIR),
-            "type": result.pop("transaction_type"),
+            "type": result["transaction_type"],
         }
 
         # TODO: add some doc.
