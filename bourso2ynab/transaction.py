@@ -26,7 +26,7 @@ TRANSACTION_LABEL_PATTERN = (
     r"(?P<payee>.+?)\s?"
     r"(SC\s)?"
     r"(PLC\s)?"
-    r"(\d+\s)?"
+    r"(\d+(\D+)?\s(\d\s)?)?"  # Catches the random digits and letters after the payee name.
     r"(-\s)?"
     r"(CB\*\d{4})?$"
 ).strip()
@@ -84,7 +84,7 @@ class Transaction:
         if is_VIR and formatted_result["payee"] is None:
             formatted_result["memo"] = result["payee"]
 
-        if not is_VIR and result["is_paypal"] is not None:
+        if not is_VIR and result.get("is_paypal") is not None:
             formatted_result["memo"] = "(via Paypal)"
 
         return Transaction(**formatted_result)
