@@ -21,6 +21,8 @@ TRANSACTION_LABEL_PATTERN = (
     r"(?P<date>\d{2}/\d{2}/\d{2})?\s?"
     r"(ZTL\*)?"
     r"(IZ \*)?"
+    r"(SUMUP \*)?"
+    r"(?P<is_paypal>PAYPAL \*)?"
     r"(?P<payee>.+?)\s?"
     r"(SC\s)?"
     r"(PLC\s)?"
@@ -81,6 +83,9 @@ class Transaction:
         # TODO: add some doc.
         if is_VIR and formatted_result["payee"] is None:
             formatted_result["memo"] = result["payee"]
+
+        if not is_VIR and result["is_paypal"] is not None:
+            formatted_result["memo"] = "(via Paypal)"
 
         return Transaction(**formatted_result)
 
