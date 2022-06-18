@@ -46,10 +46,6 @@ def cli(input_filepath, output_filepath, username, account_type, upload):
         upload_transactions(df, username=username, account_type=account_type)
 
 
-def read_bourso_transactions(filepath: Union[str, Path]) -> pd.DataFrame:
-    return pd.read_csv(filepath, sep=";")
-
-
 def upload_transactions(
     df: pd.DataFrame, username: str, account_type: str, affect_all_users: bool = True
 ):
@@ -71,7 +67,6 @@ def upload_transactions(
         account_id=get_ynab_id("account", username, account_type),
         budget_id=get_ynab_id("budget", username),
     )
-
 
 
 def convert_transaction_to_import_id(transaction: pd.Series) -> str:

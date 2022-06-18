@@ -171,6 +171,7 @@ def test_transaction_correctly_parses_label(label, expected_payee):
     [
         ("VIR Loyer", "Loyer"),
         ("VIR Remboursement chasse aux oeufs e", "Remboursement chasse aux oeufs e"),
+        # I can't manage to make this to work atm :(
         # ("VIR Remboursemnt loyer (63) electric", "Remboursment loyer (63) electric"),
         ("VIR Splurge :D", "Splurge :D"),
         ("VIR Financement pour l'Ours", "Financement pour l'Ours"),
