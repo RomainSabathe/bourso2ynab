@@ -18,16 +18,18 @@ TransactionType = Literal["VIR", "CARTE", "RETRAIT"]
 
 TRANSACTION_LABEL_PATTERN = (
     r"^(?P<transaction_type>((CARTE)|(VIR)|(RETRAIT)))\s?"
+    r"(INST\s)?"  # In case of a VIR, the format is: "VIR INST 01/01/70 Payee ..."
     r"(?P<date>\d{2}/\d{2}/\d{2})?\s?"
     r"(ZTL\*)?"
     r"(IZ \*)?"
     r"(SUMUP \*)?"
     r"(?P<is_paypal>PAYPAL \*)?"
     r"(?P<payee>.+?)\s?"
-    r"(SC\s)?"
-    r"(PLC\s)?"
-    r"(\d+(\D+)?\s(\d\s)?)?"  # Catches the random digits and letters after the payee name.
-    r"(-\s)?"
+    r"(SC\s?)?"
+    r"(SA\s?)?"
+    r"(PLC\s?)?"
+    r"(\d+(\D+)?\s?(\d\s?)?)?"  # Catches the random digits and letters after the payee name.
+    r"(-\s?)?"
     r"(CB\*\d{4})?$"
 ).strip()
 TRANSACTION_LABEL_PROG = re.compile(TRANSACTION_LABEL_PATTERN)
@@ -98,9 +100,17 @@ def format_payee_from_label(payee: Optional[str], is_VIR: bool) -> Optional[str]
     # VIRs have special payee formattings
     if is_VIR:
         if payee.startswith("Virement de "):
+            # E.g. "VIR INST Virement de ROMAIN S"
             payee = payee[12:]  # Removing "Virement de"
+        elif payee == payee.upper():
+            # When the entire payee name is capitalized, it can be assumed that it's
+            # because it is the actual payee name.
+            # E.g: "VIR INST 01/01/70 ALAN SA"
+            pass
         else:
             # In this case, we don't have much information about the payee.
+            # e.g.: "VIR Loyer"
+            # e.g.: "VIR INST Remboursement pour..."
             return None
 
     return payee.title()

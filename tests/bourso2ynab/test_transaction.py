@@ -151,7 +151,7 @@ def test_infer_vir_transaction_from_label():
         ("CARTE 01/01/70 RELAY 340356SC 4 CB*0000", "Relay"),
         ("CARTE 01/01/70 SARL T.L.N. CB*0000", "Sarl T.L.N."),
         ("CARTE 01/01/70 FNAC SC 4 CB*0000", "Fnac"),
-        # ("VIR INST ALAN SA", None),
+        ("VIR INST ALAN SA", "Alan"),
         # ("VIR Loyer", None),
         ("CARTE 01/01/70 SC-ESSENTIEL DA CB*0000", "Sc-Essentiel Da"),
         ("CARTE 01/01/70 VIEUX CAMPEUR 4 CB*0000", "Vieux Campeur"),
