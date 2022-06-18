@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Literal, Union, Optional
+from typing import Literal, Union, Optional, List
 
 import pandas as pd
 
@@ -171,3 +171,20 @@ def infer_transaction_type(transaction_label: str) -> TransactionType:
         if transaction_label.startswith(f"{transaction_type} ".lower()):
             return transaction_type
     raise UnknownTransactionType
+
+
+def make_import_ids_unique(transactions: List[Transaction]) -> List[Transaction]:
+    transactions = sorted(transactions, key=lambda t: t.import_id)
+    new_transactions = [transactions[0]]
+
+    for left, right in zip(transactions[:-1], transactions[1:]):
+        if left.import_id != right.import_id:
+            # The original transactions were different. Nothing to do.
+            new_transactions.append(right)
+            continue
+
+        new_index = new_transactions[-1].index + 1
+        new_transaction = right.copy_with_new_index(new_index)
+        new_transactions.append(new_transaction)
+
+    return new_transactions

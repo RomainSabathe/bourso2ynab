@@ -9,6 +9,7 @@ from bourso2ynab.transaction import (
     Transaction,
     infer_transaction_type,
     is_valid_bourso_entry,
+    make_import_ids_unique,
 )
 
 
@@ -229,3 +230,21 @@ def test_bump_index():
 
     transaction.bump_index(delta=2)
     assert transaction.index == 4
+
+
+def test_make_import_ids_unique():
+    transactions = [
+        Transaction(type="CARTE", date=date(year=1970, month=1, day=1), amount=10.0),
+        Transaction(type="CARTE", date=date(year=1972, month=1, day=1), amount=20.0),
+        Transaction(type="CARTE", date=date(year=1971, month=1, day=1), amount=10.0),
+        Transaction(type="CARTE", date=date(year=1972, month=1, day=1), amount=20.0),
+        Transaction(type="CARTE", date=date(year=1970, month=1, day=1), amount=10.0),
+        Transaction(type="CARTE", date=date(year=1972, month=1, day=1), amount=20.0),
+    ]
+    transactions = make_import_ids_unique(transactions)
+    assert transactions[0].import_id == "YNAB:10000:1970-01-01:1"
+    assert transactions[1].import_id == "YNAB:10000:1970-01-01:2"
+    assert transactions[2].import_id == "YNAB:10000:1971-01-01:1"
+    assert transactions[3].import_id == "YNAB:20000:1972-01-01:1"
+    assert transactions[4].import_id == "YNAB:20000:1972-01-01:2"
+    assert transactions[5].import_id == "YNAB:20000:1972-01-01:3"
