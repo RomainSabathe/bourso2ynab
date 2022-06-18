@@ -152,16 +152,11 @@ def test_infer_vir_transaction_from_label():
         ("CARTE 01/01/70 SARL T.L.N. CB*0000", "Sarl T.L.N."),
         ("CARTE 01/01/70 FNAC SC 4 CB*0000", "Fnac"),
         ("VIR INST ALAN SA", "Alan"),
-        # ("VIR Loyer", None),
         ("CARTE 01/01/70 SC-ESSENTIEL DA CB*0000", "Sc-Essentiel Da"),
         ("CARTE 01/01/70 VIEUX CAMPEUR 4 CB*0000", "Vieux Campeur"),
         ("CARTE 01/01/70 PHIE MET M BIZOT2 CB*0000", "Phie Met M Bizot"),
         ("CARTE 01/01/70 AMAZON PAYMENTS 2 CB*0000", "Amazon Payments"),
         ("CARTE 01/01/70 SUMUP *DOCTEUR R CB*0000", "Docteur R"),
-        # ("VIR Remboursement chasse aux oeufs e", None),
-        # ("VIR Remboursemnt loyer (63) electric", None),
-        # ("VIR Exploding the budget at L'Ours :D", None),
-        # ("VIR Financement pour l'Ours", None),
         ("CARTE 01/01/70 DOCKYARDS_TICKETS CB*0000", "Dockyards_Tickets"),
         ("CARTE 01/01/70 ECGCOSTA4017507 CB*0000", "Ecgcosta"),
         ("CARTE 01/01/70 SUMUP *MACO CB*0000", "Maco"),
@@ -170,6 +165,21 @@ def test_infer_vir_transaction_from_label():
 def test_transaction_correctly_parses_label(label, expected_payee):
     transaction = Transaction.from_label(label)
     assert transaction.payee == expected_payee
+
+@pytest.mark.parametrize(
+    ("label", "expected_memo"),
+    [
+        ("VIR Loyer", "Loyer"),
+        ("VIR Remboursement chasse aux oeufs e", "Remboursement chasse aux oeufs e"),
+        # ("VIR Remboursemnt loyer (63) electric", "Remboursment loyer (63) electric"),
+        ("VIR Splurge :D", "Splurge :D"),
+        ("VIR Financement pour l'Ours", "Financement pour l'Ours"),
+    ],
+)
+def test_transaction_correctly_parses_virs(label, expected_memo):
+    transaction = Transaction.from_label(label)
+    assert transaction.payee is None
+    assert transaction.memo == expected_memo
 
 
 def test_transaction_recognizes_paypal():
