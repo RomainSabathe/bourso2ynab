@@ -2,7 +2,7 @@ import os
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal, Optional, List
 
 import ynab_api as ynab
 from ynab_api.api.transactions_api import TransactionsApi
@@ -10,6 +10,8 @@ from ynab_api.model.save_transaction import SaveTransaction
 from ynab_api.model.save_transactions_wrapper import SaveTransactionsWrapper
 
 import pandas as pd
+
+from bourso2ynab.transaction import Transaction, make_import_ids_unique
 
 
 def get_ynab_id(
@@ -29,27 +31,26 @@ def get_ynab_id(
     return secrets["accounts"][username][account_type]
 
 
-def push_to_ynab(transactions: pd.DataFrame, account_id: str, budget_id: str):
-    transactions = transactions.pipe(add_import_ids).replace(np.nan, None)
-
+def push_to_ynab(transactions: List[Transaction], account_id: str, budget_id: str):
     configuration = ynab.Configuration()
     configuration.api_key["bearer"] = os.environ["YNAB_API_KEY"]
     configuration.api_key_prefix["bearer"] = "Bearer"
     api = TransactionsApi(ynab.ApiClient(configuration))
 
+    transactions = make_import_ids_unique(transactions)
     ynab_transactions = SaveTransactionsWrapper(
         transactions=[
             SaveTransaction(
                 account_id=account_id,
-                date=datetime.strptime(transaction["Date"], "%Y-%m-%d").date(),
-                amount=int(transaction["Amount"] * 1_000),
-                payee_name=transaction["Payee"],
-                memo=transaction["Memo"],
+                date=transaction.date,
+                amount=int(transaction.amount * 1_000),
+                payee_name=transaction.payee,
+                memo=transaction.memo,
                 approved=True,
                 cleared="cleared",
-                import_id=transaction["import_id"],
+                import_id=transaction.import_id,
             )
-            for _, transaction in transactions.iterrows()
+            for transaction in transactions
         ]
     )
 
