@@ -8,16 +8,13 @@ from typing import Literal, Optional, Union
 import click
 import numpy as np
 import pandas as pd
-import ynab_api as ynab
 from dotenv import load_dotenv
-from ynab_api.api.transactions_api import TransactionsApi
-from ynab_api.model.save_transaction import SaveTransaction
-from ynab_api.model.save_transactions_wrapper import SaveTransactionsWrapper
 
 load_dotenv()
 
 from bourso2ynab.payee_formatter import PayeeFormatter
 from bourso2ynab.format import format_transactions
+from bourso2ynab.ynab import push_to_ynab, get_ynab_id
 
 
 @click.command()
@@ -46,6 +43,24 @@ def cli(input_filepath, output_filepath, username, account_type, upload):
         upload_transactions(df, username=username, account_type=account_type)
 
 
+def convert_transaction_to_import_id(transaction: pd.Series) -> str:
+    return f"YNAB:{str(int(transaction['Amount'] * 1_000))}:{transaction['Date']}"
+
+
+def add_import_ids(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.assign(
+        import_id=lambda df: df.apply(convert_transaction_to_import_id, axis="columns")
+    )
+
+    # At this stage, there could be duplicates of import_id. We need to make sure they're unique.
+    for _, group in df.groupby("import_id"):
+        for i, index in enumerate(group.index):
+            df.loc[index, "import_id"] = df.loc[index, "import_id"] + f":{i + 1}"
+            # Why i + 1? Because YNAB import IDs start counting at 1.
+
+    return df
+
+
 def upload_transactions(
     df: pd.DataFrame, username: str, account_type: str, affect_all_users: bool = True
 ):
@@ -67,68 +82,6 @@ def upload_transactions(
         account_id=get_ynab_id("account", username, account_type),
         budget_id=get_ynab_id("budget", username),
     )
-
-
-def convert_transaction_to_import_id(transaction: pd.Series) -> str:
-    return f"YNAB:{str(int(transaction['Amount'] * 1_000))}:{transaction['Date']}"
-
-
-def add_import_ids(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.assign(
-        import_id=lambda df: df.apply(convert_transaction_to_import_id, axis="columns")
-    )
-
-    # At this stage, there could be duplicates of import_id. We need to make sure they're unique.
-    for _, group in df.groupby("import_id"):
-        for i, index in enumerate(group.index):
-            df.loc[index, "import_id"] = df.loc[index, "import_id"] + f":{i + 1}"
-            # Why i + 1? Because YNAB import IDs start counting at 1.
-
-    return df
-
-
-def get_ynab_id(
-    id_type: Literal["budget", "account"],
-    username: str,
-    account_type: Optional[Literal["perso", "joint"]] = None,
-) -> str:
-    secrets = json.loads(Path("secrets.json").read_text())
-    if id_type == "budget":
-        return secrets["budgets"][username]
-    assert (
-        account_type is not None
-    ), "An account type (perso/joint) is required when accessing Accounts."
-    return secrets["accounts"][username][account_type]
-
-
-def push_to_ynab(transactions: pd.DataFrame, account_id: str, budget_id: str):
-    transactions = transactions.pipe(add_import_ids).replace(np.nan, None)
-
-    configuration = ynab.Configuration()
-    configuration.api_key["bearer"] = os.environ["YNAB_API_KEY"]
-    configuration.api_key_prefix["bearer"] = "Bearer"
-    api = TransactionsApi(ynab.ApiClient(configuration))
-
-    ynab_transactions = SaveTransactionsWrapper(
-        transactions=[
-            SaveTransaction(
-                account_id=account_id,
-                date=datetime.strptime(transaction["Date"], "%Y-%m-%d").date(),
-                amount=int(transaction["Amount"] * 1_000),
-                payee_name=transaction["Payee"],
-                memo=transaction["Memo"],
-                approved=True,
-                cleared="cleared",
-                import_id=transaction["import_id"],
-            )
-            for _, transaction in transactions.iterrows()
-        ]
-    )
-
-    try:
-        return api.create_transaction(budget_id, ynab_transactions)
-    except ynab.rest.ApiException as e:
-        print("Exception when calling TransactionsApi->create_transaction: %s\n" % e)
 
 
 if __name__ == "__main__":
