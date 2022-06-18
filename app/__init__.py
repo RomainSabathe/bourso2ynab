@@ -8,13 +8,6 @@ import pandas as pd
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, session
 
-from bourso2ynab import (
-    read_bourso_transactions,
-    format_transactions,
-    upload_transactions,
-    PayeeFormatter,
-)
-
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)
 load_dotenv()
 
