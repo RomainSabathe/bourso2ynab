@@ -166,6 +166,7 @@ def test_transaction_correctly_parses_label(label, expected_payee):
     transaction = Transaction.from_label(label)
     assert transaction.payee == expected_payee
 
+
 @pytest.mark.parametrize(
     ("label", "expected_memo"),
     [
@@ -192,3 +193,39 @@ def test_transaction_recognizes_paypal():
     assert transaction.payee == expected_payee
     assert transaction.memo == expected_memo
 
+
+def test_import_id():
+    transaction = Transaction(
+        type="CARTE", date=date(year=2022, month=6, day=14), amount=16.33
+    )
+
+    assert transaction.import_id == "YNAB:16330:2022-06-14:1"
+
+
+def test_copy_with_new_index():
+    transaction = Transaction(
+        type="CARTE", date=date(year=2022, month=6, day=14), amount=16.33
+    )
+    assert transaction.type == "CARTE"
+    assert transaction.date == date(year=2022, month=6, day=14)
+    assert transaction.amount == 16.33
+    assert transaction.index == 1
+
+    new_transaction = transaction.copy_with_new_index(2)
+    assert new_transaction.type == "CARTE"
+    assert new_transaction.date == date(year=2022, month=6, day=14)
+    assert new_transaction.amount == 16.33
+    assert new_transaction.index == 2
+
+
+def test_bump_index():
+    transaction = Transaction(
+        type="CARTE", date=date(year=2022, month=6, day=14), amount=16.33
+    )
+    assert transaction.index == 1
+
+    transaction.bump_index()
+    assert transaction.index == 2
+
+    transaction.bump_index(delta=2)
+    assert transaction.index == 4

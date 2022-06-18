@@ -42,6 +42,7 @@ class Transaction:
     amount: float = None
     payee: str = None
     memo: str = None
+    index: int = 1  # Used to avoid importing duplicated transactions
 
     @staticmethod
     def from_pandas(row: pd.Series, format: bool = True):
@@ -90,6 +91,27 @@ class Transaction:
             formatted_result["memo"] = "(via Paypal)"
 
         return Transaction(**formatted_result)
+
+    def copy_with_new_index(self, new_index: int):
+        return Transaction(
+            type=self.type,
+            date=self.date,
+            amount=self.amount,
+            payee=self.payee,
+            memo=self.memo,
+            index=new_index,
+        )
+
+    def bump_index(self, delta: int = 1):
+        self.index += delta
+
+    @property
+    def import_id(self) -> str:
+        amount_in_mili_currency = int(round(self.amount * 1_000))
+        amount_in_mili_currency_str = str(amount_in_mili_currency)
+        formated_date = self.date.strftime("%Y-%m-%d")
+
+        return f"YNAB:{amount_in_mili_currency_str}:{formated_date}:{self.index}"
 
 
 def format_payee_from_label(payee: Optional[str], is_VIR: bool) -> Optional[str]:
