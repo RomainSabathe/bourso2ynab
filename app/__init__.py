@@ -8,6 +8,9 @@ import pandas as pd
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, session
 
+from bourso2ynab.transaction import Transaction
+from bourso2ynab.io import read_bourso_transactions
+
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)
 load_dotenv()
 
@@ -29,7 +32,13 @@ def create_app(test_config=None):
 
     @app.route("/csv/upload", methods=["POST"])
     def upload_csv():
-        return render_template("review_transactions.html")
+        csv_file = request.files["transactions-file"]
+        df = read_bourso_transactions(filepath=csv_file.stream)
+        transaction = Transaction.from_pandas(df.iloc[0])
+
+        return render_template(
+            "review_transactions.html", table=transaction.to_html(with_title=True)
+        )
 
         # if request.method == "POST":
         #     if request.form["form_type"] == "transactions_upload":

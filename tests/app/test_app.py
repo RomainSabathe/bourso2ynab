@@ -14,3 +14,4 @@ def test_submit_csv_for(client, transactions_csv_filepath):
         },
     )
     assert "<table>" in response.text
+    assert "<td>2022/06/13</td>" in response.text
