@@ -219,19 +219,6 @@ def test_copy_with_new_index():
     assert new_transaction.index == 2
 
 
-def test_bump_index():
-    transaction = Transaction(
-        type="CARTE", date=date(year=2022, month=6, day=14), amount=16.33
-    )
-    assert transaction.index == 1
-
-    transaction.bump_index()
-    assert transaction.index == 2
-
-    transaction.bump_index(delta=2)
-    assert transaction.index == 4
-
-
 def test_make_import_ids_unique():
     transactions = [
         Transaction(type="CARTE", date=date(year=1970, month=1, day=1), amount=10.0),

@@ -102,9 +102,6 @@ class Transaction:
             index=new_index,
         )
 
-    def bump_index(self, delta: int = 1):
-        self.index += delta
-
     @property
     def import_id(self) -> str:
         amount_in_mili_currency = int(round(self.amount * 1_000))
