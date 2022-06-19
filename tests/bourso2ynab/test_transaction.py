@@ -235,3 +235,82 @@ def test_make_import_ids_unique():
     assert transactions[3].import_id == "YNAB:20000:1972-01-01:1"
     assert transactions[4].import_id == "YNAB:20000:1972-01-01:2"
     assert transactions[5].import_id == "YNAB:20000:1972-01-01:3"
+
+
+def test_transaction_to_html_non_editable():
+    transaction = Transaction(
+        type="CARTE",
+        date=date(year=1970, month=1, day=1),
+        amount=12.34,
+        payee="Monsieur",
+        memo="This is a test",
+    )
+
+    expected_lines = [
+        "<tr>",
+        "<td>1970/01/01</td>",
+        "<td>12.34</td>",
+        "<td>Monsieur</td>",
+        "<td>This is a test</td>",
+        "</tr>",
+    ]
+
+    assert "\n".join(expected_lines) == transaction.to_html()
+
+
+def test_transaction_to_html_non_editable_with_title():
+    transaction = Transaction(
+        type="CARTE",
+        date=date(year=1970, month=1, day=1),
+        amount=12.34,
+        payee="Monsieur",
+        memo="This is a test",
+    )
+
+    expected_lines = [
+        "<tr>",
+        "<th>Date</th>",
+        "<th>Amount</th>",
+        "<th>Payee</th>",
+        "<th>Memo</th>",
+        "</tr>",
+        "<tr>",
+        "<td>1970/01/01</td>",
+        "<td>12.34</td>",
+        "<td>Monsieur</td>",
+        "<td>This is a test</td>",
+        "</tr>",
+    ]
+
+    assert "\n".join(expected_lines) == transaction.to_html(with_title=True)
+
+
+def test_transaction_to_html_editable():
+    transaction = Transaction(
+        type="CARTE",
+        date=date(year=1970, month=1, day=1),
+        amount=12.34,
+        payee="Monsieur",
+        memo="This is a test",
+    )
+
+    expected_lines = [
+        "<tr>",
+        "<td>1970/01/01</td>",
+        "<td>12.34</td>",
+        "<td>",
+        "<input ",
+        'type="text"',
+        'name="payee-input-text"',
+        'value="Monsieur"',
+        "</td>",
+        "<td>",
+        "<input ",
+        'type="text"',
+        'name="memo-input-text"',
+        'value="This is a test"',
+        "</td>",
+        "</tr>",
+    ]
+
+    assert "\n".join(expected_lines) == transaction.to_html(editable=True)

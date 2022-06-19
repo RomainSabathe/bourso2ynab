@@ -92,6 +92,52 @@ class Transaction:
 
         return Transaction(**formatted_result)
 
+    def to_html(self, with_title: bool = False, editable: bool = False) -> str:
+        formatted_date = self.date.strftime("%Y/%m/%d")
+        formatted_amount = f"{self.amount:.2f}"
+
+        lines = []
+
+        if with_title:
+            lines.extend(
+                [
+                    "<tr>",
+                    "<th>Date</th>",
+                    "<th>Amount</th>",
+                    "<th>Payee</th>",
+                    "<th>Memo</th>",
+                    "</tr>",
+                ]
+            )
+
+        def maybe_to_editable(html_row: str, name: str) -> List[str]:
+            if not editable:
+                return [html_row]
+
+            re_match = re.match(r"^<td>(?P<content>.*?)</td>$", html_row)
+            content = re_match.group("content")
+            return [
+                "<td>",
+                "<input ",
+                'type="text"',
+                f'name="{name}-input-text"',
+                f'value="{content}"',
+                "</td>",
+            ]
+
+        lines.extend(
+            [
+                "<tr>",
+                f"<td>{formatted_date}</td>",
+                f"<td>{formatted_amount}</td>",
+                *maybe_to_editable(f"<td>{self.payee}</td>", name="payee"),
+                *maybe_to_editable(f"<td>{self.memo}</td>", name="memo"),
+                "</tr>",
+            ]
+        )
+
+        return "\n".join(lines)
+
     def copy_with_new_index(self, new_index: int):
         return Transaction(
             type=self.type,
