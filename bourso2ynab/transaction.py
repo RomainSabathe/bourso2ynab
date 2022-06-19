@@ -196,6 +196,10 @@ def format_date_from_dateVal(_date: Optional[str]) -> Optional[date]:
 
 
 def format_amount(amount: Union[float, str]) -> float:
+    if isinstance(amount, float):
+        return amount
+
+    amount = amount.replace(",", ".")  # French uses a comma
     return float(amount)
 
 

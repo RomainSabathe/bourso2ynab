@@ -10,6 +10,7 @@ from bourso2ynab.transaction import (
     infer_transaction_type,
     is_valid_bourso_entry,
     make_import_ids_unique,
+    format_amount,
 )
 
 
@@ -314,3 +315,10 @@ def test_transaction_to_html_editable():
     ]
 
     assert "\n".join(expected_lines) == transaction.to_html(editable=True)
+
+
+def test_format_amount():
+    assert format_amount("-2,00") == -2.00
+    assert format_amount("-2") == -2.00
+    assert format_amount("-2.00") == -2.00
+    assert format_amount("2,12") == 2.12
