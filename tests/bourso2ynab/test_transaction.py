@@ -304,12 +304,14 @@ def test_transaction_to_html_editable():
         'type="text"',
         'name="payee-input-text"',
         'value="Monsieur"',
+        ">",
         "</td>",
         "<td>",
         "<input ",
         'type="text"',
         'name="memo-input-text"',
         'value="This is a test"',
+        ">",
         "</td>",
         "</tr>",
     ]
@@ -322,3 +324,22 @@ def test_format_amount():
     assert format_amount("-2") == -2.00
     assert format_amount("-2.00") == -2.00
     assert format_amount("2,12") == 2.12
+
+
+def test_transaction_to_html_with_empty_fields():
+    transaction = Transaction(
+        type="CARTE",
+        date=date(year=1970, month=1, day=1),
+        payee="Monsieur",
+    )
+
+    expected_lines = [
+        "<tr>",
+        "<td>1970/01/01</td>",
+        "<td></td>",
+        "<td>Monsieur</td>",
+        "<td></td>",
+        "</tr>",
+    ]
+
+    assert "\n".join(expected_lines) == transaction.to_html()

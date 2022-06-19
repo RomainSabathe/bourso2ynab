@@ -93,8 +93,15 @@ class Transaction:
         return Transaction(**formatted_result)
 
     def to_html(self, with_title: bool = False, editable: bool = False) -> str:
-        formatted_date = self.date.strftime("%Y/%m/%d")
-        formatted_amount = f"{self.amount:.2f}"
+        safe_str = lambda x: x if x is not None else ""
+        formatted_date = safe_str(
+            self.date.strftime("%Y/%m/%d") if self.date is not None else None
+        )
+        formatted_amount = safe_str(
+            f"{self.amount:.2f}" if self.amount is not None else None
+        )
+        formatted_memo = safe_str(self.memo)
+        formatted_payee = safe_str(self.payee)
 
         lines = []
 
@@ -122,6 +129,7 @@ class Transaction:
                 'type="text"',
                 f'name="{name}-input-text"',
                 f'value="{content}"',
+                ">",
                 "</td>",
             ]
 
@@ -130,8 +138,8 @@ class Transaction:
                 "<tr>",
                 f"<td>{formatted_date}</td>",
                 f"<td>{formatted_amount}</td>",
-                *maybe_to_editable(f"<td>{self.payee}</td>", name="payee"),
-                *maybe_to_editable(f"<td>{self.memo}</td>", name="memo"),
+                *maybe_to_editable(f"<td>{formatted_payee}</td>", name="payee"),
+                *maybe_to_editable(f"<td>{formatted_memo}</td>", name="memo"),
                 "</tr>",
             ]
         )

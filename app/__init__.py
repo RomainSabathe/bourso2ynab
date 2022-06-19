@@ -37,7 +37,8 @@ def create_app(test_config=None):
         transaction = Transaction.from_pandas(df.iloc[0])
 
         return render_template(
-            "review_transactions.html", table=transaction.to_html(with_title=True)
+            "review_transactions.html",
+            table=transaction.to_html(with_title=True, editable=True),
         )
 
         # if request.method == "POST":
