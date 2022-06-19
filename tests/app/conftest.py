@@ -15,11 +15,16 @@ def app():
     yield app
 
 
+@pytest.fixture()
+def client(app):
+    return app.test_client()
+
+
 @pytest.fixture
 def firefox_options(firefox_options):
     firefox_options.binary = r"C:\Program Files\WindowsApps\Mozilla.Firefox_101.0.1.0_x64__n80bbvh6b1yt2\VFS\ProgramFiles\Firefox Package Root\firefox.exe"
     firefox_options.add_argument("-foreground")
-    # firefox_options.add_argument("--headless")
+    firefox_options.add_argument("--headless")
     firefox_options.set_preference("browser.anchor_color", "#FF0000")
     return firefox_options
 

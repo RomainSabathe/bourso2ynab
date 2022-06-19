@@ -13,26 +13,29 @@
           >
           <input type="file" id="input_file" name="input_file" required />
 
-          <p>
-            I am:
-            <input
-              type="radio"
-              id="romain"
-              name="username"
-              value="romain"
-              checked="checked"
-            />
-            <label for="romain">Romain</label>
-            <input
-              type="radio"
-              id="ginette"
-              name="username"
-              value="ginette"
-            />
-            <label for="ginette">ginette</label>
-          </p>
+          <fieldset id="username-selection-box">
+            <legend>I am</legend>
+            <label for="romain">
+              <input
+                type="radio"
+                id="romain-username-radio"
+                name="username"
+                value="romain"
+              />
+              Romain
+            </label>
+            <label for="ginette">
+              <input
+                type="radio"
+                id="ginette-username-radio"
+                name="username"
+                value="ginette"
+              />
+              ginette
+            </label>
+          </fieldset>
 
-          <p>
+          <p id="account-type-selection-box">
             Account type:
             <input
               type="radio"
@@ -46,7 +49,7 @@
             <label for="joint">Joint</label>
           </p>
 
-          <input type="submit" />
+          <input id="submit-csv-button" type="submit" />
         </form>
 
         <br />
@@ -106,7 +109,7 @@
         <pre>
            {{ api_response | safe }}
         </pre>
-         {% endif %}
+        {% endif %}
       </div>
     </div>
   </body>
