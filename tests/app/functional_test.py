@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import pytest
 
 from selenium.webdriver.common.by import By
@@ -5,8 +8,10 @@ from selenium.webdriver.support.relative_locator import locate_with
 
 
 @pytest.mark.nondestructive
-def test_submit_transactions(selenium, base_url):
+def test_submit_transactions(selenium, base_url, transactions_csv_filepath):
     selenium.get(base_url)
+    import ipdb; ipdb.set_trace()
+    pass
 
     # As a user, I should be able to specify who I am. There should be 2 options.
     fieldset = selenium.find_element(By.ID, "username-selection-box")
@@ -25,6 +30,23 @@ def test_submit_transactions(selenium, base_url):
         assert input.get_property("id") == f"{username}-username-radio"
         assert input.get_property("name") == "username"
         assert input.get_property("value") == username
+
+    browse_button = selenium.find_element(By.ID, "transactions-file-upload-button")
+    browse_button.send_keys(str(transactions_csv_filepath))
+
+    username_button = selenium.find_element(By.ID, "romain-username-radio")
+    username_button.click()
+
+    account_type_button = selenium.find_element(By.ID, "perso-account-type-radio")
+    account_type_button.click()
+    import ipdb; ipdb.set_trace()
+    pass
+
+    submit_button = selenium.find_element(By.ID, "submit-csv-button")
+    submit_button.click()
+
+    import ipdb; ipdb.set_trace()
+    pass
         
 
 # def test_functional(selenium, firefox_options):

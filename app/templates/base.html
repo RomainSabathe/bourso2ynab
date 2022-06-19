@@ -5,13 +5,21 @@
 
     <div style="display: block; width: 100%">
       <div style="width: 40%; float: left; display: inline-block">
-        <form method="post" enctype="multipart/form-data">
-          <input type="hidden" name="form_type" value="transactions_upload" />
-          <label for="input_file"
+        <form
+          action="{{ url_for('upload_csv') }}"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <label for="input-file"
             >Select your Boursorama transactions (see the tutorial
             below):</label
           >
-          <input type="file" id="input_file" name="input_file" required />
+          <input
+            type="file"
+            id="transactions-file-upload-button"
+            name="transactions-file"
+            required
+          />
 
           <fieldset id="username-selection-box">
             <legend>I am</legend>
@@ -35,19 +43,27 @@
             </label>
           </fieldset>
 
-          <p id="account-type-selection-box">
-            Account type:
-            <input
-              type="radio"
-              id="perso"
-              name="account_type"
-              value="perso"
-              checked="checked"
-            />
-            <label for="perso">Perso</label>
-            <input type="radio" id="joint" name="account_type" value="joint" />
-            <label for="joint">Joint</label>
-          </p>
+          <fieldset id="account-type-selection-box">
+            <legend>Account type</legend>
+            <label for="perso">
+              <input
+                type="radio"
+                id="perso-account-type-radio"
+                name="account-type"
+                value="perso"
+              />
+              Perso
+            </label>
+            <label for="joint">
+              <input
+                type="radio"
+                id="joint-account-type-radio"
+                name="account-type"
+                value="joint"
+              />
+              Joint
+            </label>
+          </fieldset>
 
           <input id="submit-csv-button" type="submit" />
         </form>

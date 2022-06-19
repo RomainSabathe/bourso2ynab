@@ -1,6 +1,7 @@
 import os
 import socket
 import subprocess
+from pathlib import Path
 
 import pytest
 from flask import request
@@ -24,7 +25,7 @@ def client(app):
 def firefox_options(firefox_options):
     firefox_options.binary = r"C:\Program Files\WindowsApps\Mozilla.Firefox_101.0.1.0_x64__n80bbvh6b1yt2\VFS\ProgramFiles\Firefox Package Root\firefox.exe"
     firefox_options.add_argument("-foreground")
-    firefox_options.add_argument("--headless")
+    # firefox_options.add_argument("--headless")
     firefox_options.set_preference("browser.anchor_color", "#FF0000")
     return firefox_options
 
@@ -53,3 +54,8 @@ def live_server(flask_port):
 @pytest.fixture(scope="session")
 def base_url(flask_port):
     return f"http://localhost:{flask_port}"
+
+
+@pytest.fixture
+def transactions_csv_filepath():
+    return Path(__file__).parent.parent / "resources" / "transactions.csv"

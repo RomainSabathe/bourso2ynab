@@ -1,0 +1,6 @@
+﻿dateOp;dateVal;label;category;categoryParent;amount;comment;accountNum;accountLabel;accountbalance
+2022-06-15;2022-06-15;"CARTE 13/06/22 VELIB METROPOLE 2 CB*0000";"Transports quotidiens (métro, bus…)";"Voyages & Transports";-2,00;;0;"BOURSORAMA BANQUE";0
+2022-06-13;2022-06-13;"CARTE 11/06/22 RATP CB*0000";"Transports quotidiens (métro, bus…)";"Voyages & Transports";-3,80;;0;"BOURSORAMA BANQUE";0
+2022-06-10;2022-06-10;"PRLV SEPA Bouygues Telecom";"Téléphonie (fixe et mobile)";"Abonnements & téléphonie";-9,99;;0;"BOURSORAMA BANQUE";0
+2022-06-09;2022-06-09;"VIR Virement de Monsieur Fromage";"Virements émis de comptes à comptes";"Mouvements internes débiteurs";-10,00;;0;"BOURSORAMA BANQUE";0
+2022-06-08;2022-06-08;"CARTE 06/06/22 FRANPRIX 1234 CB*0000";Alimentation;"Vie quotidienne";-11,64;;0;"BOURSORAMA BANQUE";0
