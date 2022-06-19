@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block left_side %}
+
+<form
+  action="{{ url_for('upload_csv') }}"
+  method="post"
+  enctype="multipart/form-data"
+>
+  <label for="input-file">Select your Boursorama transactions:</label>
+  <input
+    type="file"
+    id="transactions-file-upload-button"
+    name="transactions-file"
+    required
+  />
+
+  <fieldset id="username-selection-box">
+    <legend>I am</legend>
+    <label for="romain">
+      <input
+        type="radio"
+        id="romain-username-radio"
+        name="username"
+        value="romain"
+      />
+      Romain
+    </label>
+    <label for="ginette">
+      <input
+        type="radio"
+        id="ginette-username-radio"
+        name="username"
+        value="ginette"
+      />
+      ginette
+    </label>
+  </fieldset>
+
+  <fieldset id="account-type-selection-box">
+    <legend>Account type</legend>
+    <label for="perso">
+      <input
+        type="radio"
+        id="perso-account-type-radio"
+        name="account-type"
+        value="perso"
+      />
+      Perso
+    </label>
+    <label for="joint">
+      <input
+        type="radio"
+        id="joint-account-type-radio"
+        name="account-type"
+        value="joint"
+      />
+      Joint
+    </label>
+  </fieldset>
+
+  <input id="submit-csv-button" type="submit" />
+</form>
+
+{% endblock %} {% block right_side %}
+
+<h3>How to use this tool</h3>
+
+<ol>
+  <li>
+    Go to
+    <a href="https://clients.boursorama.com/connexion">Boursorama</a>
+    and log in
+  </li>
+  <li>Select the account of interest</li>
+  <li>
+    At the top of the page, enter a date selection (you don't need it to make it
+    precise. YNAB will know about transactions it has seen before) and click on
+    "Rechercher" <br />
+    <br />
+    <img src={{ url_for('static', filename='date_range_example.png') }}
+    width="682px" />
+  </li>
+  <li>
+    At the bottom of the page, click on "Export au format CSV" and store the
+    file <br />
+    <br />
+    <img src={{ url_for('static', filename='export_csv_example.png') }}
+    width="682px" />
+  </li>
+  <li>
+    Choose this file in the form above and fill the rest of the information
+  </li>
+</ol>
+
+{% endblock %}

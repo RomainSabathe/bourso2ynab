@@ -5,127 +5,13 @@
 
     <div style="display: block; width: 100%">
       <div style="width: 40%; float: left; display: inline-block">
-        <form
-          action="{{ url_for('upload_csv') }}"
-          method="post"
-          enctype="multipart/form-data"
-        >
-          <label for="input-file"
-            >Select your Boursorama transactions (see the tutorial
-            below):</label
-          >
-          <input
-            type="file"
-            id="transactions-file-upload-button"
-            name="transactions-file"
-            required
-          />
-
-          <fieldset id="username-selection-box">
-            <legend>I am</legend>
-            <label for="romain">
-              <input
-                type="radio"
-                id="romain-username-radio"
-                name="username"
-                value="romain"
-              />
-              Romain
-            </label>
-            <label for="ginette">
-              <input
-                type="radio"
-                id="ginette-username-radio"
-                name="username"
-                value="ginette"
-              />
-              ginette
-            </label>
-          </fieldset>
-
-          <fieldset id="account-type-selection-box">
-            <legend>Account type</legend>
-            <label for="perso">
-              <input
-                type="radio"
-                id="perso-account-type-radio"
-                name="account-type"
-                value="perso"
-              />
-              Perso
-            </label>
-            <label for="joint">
-              <input
-                type="radio"
-                id="joint-account-type-radio"
-                name="account-type"
-                value="joint"
-              />
-              Joint
-            </label>
-          </fieldset>
-
-          <input id="submit-csv-button" type="submit" />
-        </form>
-
-        <br />
-        <br />
-
-        <h3>How to use this tool</h3>
-
-        <ol>
-          <li>
-            Go to
-            <a href="https://clients.boursorama.com/connexion">Boursorama</a>
-            and log in
-          </li>
-          <li>Select the account of interest</li>
-          <li>
-            At the top of the page, enter a date selection (you don't need it to
-            make it precise. YNAB will know about transactions it has seen
-            before) and click on "Rechercher" <br />
-            <br />
-            <img src={{ url_for('static', filename='date_range_example.png') }}
-            width="682px" />
-          </li>
-          <li>
-            At the bottom of the page, click on "Export au format CSV" and store
-            the file <br />
-            <br />
-            <img src={{ url_for('static', filename='export_csv_example.png') }}
-            width="682px" />
-          </li>
-          <li>
-            Choose this file in the form above and fill the rest of the
-            information
-          </li>
-        </ol>
+        {% block left_side %} {% endblock %}
       </div>
 
       <div style="width: 20%; float: left; display: inline-block"></div>
 
       <div style="width: 40%; float: left; display: inline-block">
-        {% if dataframe is defined %}
-        <p>
-          Please review the information below and click on "Submit" to validate.
-        </p>
-        <form method="post" enctype="multipart/form-data">
-          <input
-            type="hidden"
-            name="form_type"
-            value="transactions_validation"
-          />
-          {{ dataframe | safe }}
-          <br />
-          <input type="submit" />
-        </form>
-
-        {% elif api_response is defined %}
-        <p>All done!</p>
-        <pre>
-           {{ api_response | safe }}
-        </pre>
-        {% endif %}
+        {% block right_side %} {% endblock %}
       </div>
     </div>
   </body>

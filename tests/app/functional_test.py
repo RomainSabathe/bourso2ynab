@@ -10,8 +10,6 @@ from selenium.webdriver.support.relative_locator import locate_with
 @pytest.mark.nondestructive
 def test_submit_transactions(selenium, base_url, transactions_csv_filepath):
     selenium.get(base_url)
-    import ipdb; ipdb.set_trace()
-    pass
 
     # As a user, I should be able to specify who I am. There should be 2 options.
     fieldset = selenium.find_element(By.ID, "username-selection-box")
@@ -39,8 +37,6 @@ def test_submit_transactions(selenium, base_url, transactions_csv_filepath):
 
     account_type_button = selenium.find_element(By.ID, "perso-account-type-radio")
     account_type_button.click()
-    import ipdb; ipdb.set_trace()
-    pass
 
     submit_button = selenium.find_element(By.ID, "submit-csv-button")
     submit_button.click()

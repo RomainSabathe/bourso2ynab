@@ -23,13 +23,13 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    @app.route("/", methods=["GET", "POST"])
+    @app.route("/", methods=["GET"])
     def main():
-        return render_template("base.html")
+        return render_template("submit_csv.html")
 
-    @app.route("/csv/upload")
+    @app.route("/csv/upload", methods=["POST"])
     def upload_csv():
-        return render_template("base.html")
+        return render_template("review_transactions.html")
 
         # if request.method == "POST":
         #     if request.form["form_type"] == "transactions_upload":
