@@ -1,4 +1,5 @@
 import os
+import json
 import socket
 import subprocess
 from pathlib import Path
@@ -56,6 +57,24 @@ def base_url(flask_port):
     return f"http://localhost:{flask_port}"
 
 
-@pytest.fixture
+@pytest.fixture()
 def transactions_csv_filepath():
     return Path(__file__).parent.parent / "resources" / "transactions.csv"
+
+
+@pytest.fixture()
+def ynab_secrets_filepath(tmpdir):
+    secrets = {
+        "budgets": {
+            "user1": "abcd",
+            "user2": "7890",
+        },
+        "accounts": {
+            "user1": {"perso": "0123", "joint": "4567"},
+            "user2": {"perso": "0000", "joint": "1111"},
+        },
+    }
+    with (tmpdir / "secrets.json").open("w") as f:
+        json.dump(secrets, f)
+
+    yield tmpdir / "secrets.json"
