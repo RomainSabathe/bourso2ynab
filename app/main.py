@@ -13,8 +13,12 @@ def main():
 
 @bp.route("/csv/upload", methods=["POST"])
 def upload_csv():
-    csv_file = request.files["transactions-file"]
+    # Populating the session with the results from the form.
+    for key in ["username", "account-type"]:
+        session[key] = request.form[key]
 
+    # Reading and saving the content of the csv file.
+    csv_file = request.files["transactions-file"]
     df = read_bourso_transactions(filepath=csv_file.stream)
     transactions = [Transaction.from_pandas(row) for _, row in df.iterrows()]
     transactions = sorted(transactions, key=lambda x: x.date)
