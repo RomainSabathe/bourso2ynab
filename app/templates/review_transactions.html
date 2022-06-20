@@ -1,7 +1,16 @@
 {% extends 'base.html' %} {% block left_side %}
 
-<table>
-  {{ table | safe}}
-</table>
+<form
+  action="{{ url_for('main.push_to_ynab') }}"
+  method="post"
+  enctype="multipart/form-data"
+>
+  <table>
+    {{ table | safe}}
+  </table>
+
+  <br />
+  <input type="submit" id="push-to-ynab-button-bottom" />
+</form>
 
 {% endblock %} {% block right_side %} {% endblock %}

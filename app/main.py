@@ -21,3 +21,8 @@ def upload_csv():
     )
 
     return render_template("review_transactions.html", table=html_table)
+
+
+@bp.route("/ynab/push", methods=["POST"])
+def push_to_ynab():
+    return render_template("submit_csv.html")

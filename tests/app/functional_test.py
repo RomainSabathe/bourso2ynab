@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.relative_locator import locate_with
 
 
@@ -41,9 +42,17 @@ def test_submit_transactions(selenium, base_url, transactions_csv_filepath):
     submit_button = selenium.find_element(By.ID, "submit-csv-button")
     submit_button.click()
 
+    # I arrive on the next page. There is a table with the list of transactions.
+    # I can validate by clicking on the button.
+
+    el = WebDriverWait(selenium, timeout=3).until(
+        lambda d: d.find_element(By.ID, "push-to-ynab-button-bottom")
+    )
+    el.click()
+
     import ipdb; ipdb.set_trace()
     pass
-        
+
 
 # def test_functional(selenium, firefox_options):
 #     selenium.get("/")
