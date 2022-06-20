@@ -1,13 +1,17 @@
 import os
 import json
 import socket
+import functools
 import subprocess
 from pathlib import Path
 
 import pytest
 from flask import request
+import flask.json as flask_json
+from dotenv import load_dotenv
 
 from app import create_app
+from bourso2ynab.ynab import get_ynab_id
 
 
 @pytest.fixture()
@@ -44,7 +48,11 @@ def flask_port():
 @pytest.fixture(scope="session", autouse=True)
 def live_server(flask_port):
     env = os.environ.copy()
-    # env["FLASK_APP"] = "bourso2ynab.app"
+
+    # Preventing from pushing to the live server.
+    if env.get("YNAB_API_KEY") is not None:
+        env.pop("YNAB_API_KEY")
+
     server = subprocess.Popen(["flask", "run", "--port", str(flask_port)], env=env)
     try:
         yield server
@@ -57,12 +65,12 @@ def base_url(flask_port):
     return f"http://localhost:{flask_port}"
 
 
-@pytest.fixture()
+@pytest.fixture
 def transactions_csv_filepath():
-    return Path(__file__).parent.parent / "resources" / "transactions.csv"
+    return Path(__file__).parent / "resources" / "transactions.csv"
 
 
-@pytest.fixture()
+@pytest.fixture
 def ynab_secrets_filepath(tmpdir):
     secrets = {
         "budgets": {
@@ -78,3 +86,29 @@ def ynab_secrets_filepath(tmpdir):
         json.dump(secrets, f)
 
     yield tmpdir / "secrets.json"
+
+
+@pytest.fixture
+def ynab_mocker(mocker, ynab_secrets_filepath):
+    mocker.patch(
+        "app.main.ynab.get_ynab_id",
+        functools.partial(get_ynab_id, secrets_path=ynab_secrets_filepath),
+    )
+    mocker.patch(
+        "app.main.ynab.push_to_ynab",
+        lambda transactions, account_id, budget_id: flask_json.dumps(transactions),
+    )
+
+    yield
+
+
+@pytest.fixture
+def env_mocker(mocker):
+    def mocked_load_dotenv():
+        load_dotenv()
+        if os.environ.get("YNAB_API_KEY") is not None:
+            os.environ.pop("YNAB_API_KEY")
+
+    mocker.patch("bourso2ynab.main.load_dotenv", mocked_load_dotenv)
+
+    yield

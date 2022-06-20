@@ -96,6 +96,8 @@ class Transaction:
 
     @staticmethod
     def from_flask_json(entry: str):
+        # Only the date has a special formating. So it's the only field we need
+        # to carefully parse.
         # e.g. entry["date"] = "Thu, 01 Jan 1970 00:00:00 GMT"
         _date = datetime.strptime(entry.pop("date"), "%a, %d %b %Y %H:%M:%S %Z").date()
         return Transaction(date=_date, **entry)
