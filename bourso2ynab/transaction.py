@@ -17,8 +17,9 @@ class InvalidBoursoTransaction(Exception):
 TransactionType = Literal["VIR", "CARTE", "RETRAIT"]
 
 TRANSACTION_LABEL_PATTERN = (
-    r"^(?P<transaction_type>((CARTE)|(VIR)|(RETRAIT)))\s?"
+    r"^(?P<transaction_type>((CARTE)|(VIR)|(RETRAIT)|(PRLV)))\s?"
     r"(INST\s)?"  # In case of a VIR, the format is: "VIR INST 01/01/70 Payee ..."
+    r"(SEPA\s)?"  # In case of a PRLV, the format is: "PRLV SEPA Payee ..."
     r"(?P<date>\d{2}/\d{2}/\d{2})?\s?"
     r"(ZTL\*)?"
     r"(IZ \*)?"

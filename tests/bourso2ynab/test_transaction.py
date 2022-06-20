@@ -154,7 +154,6 @@ def test_infer_vir_transaction_from_label():
         ("CARTE 01/01/70 RELAY 340356SC 4 CB*0000", "Relay"),
         ("CARTE 01/01/70 SARL T.L.N. CB*0000", "Sarl T.L.N."),
         ("CARTE 01/01/70 FNAC SC 4 CB*0000", "Fnac"),
-        ("VIR INST ALAN SA", "Alan"),
         ("CARTE 01/01/70 SC-ESSENTIEL DA CB*0000", "Sc-Essentiel Da"),
         ("CARTE 01/01/70 VIEUX CAMPEUR 4 CB*0000", "Vieux Campeur"),
         ("CARTE 01/01/70 PHIE MET M BIZOT2 CB*0000", "Phie Met M Bizot"),
@@ -163,6 +162,8 @@ def test_infer_vir_transaction_from_label():
         ("CARTE 01/01/70 DOCKYARDS_TICKETS CB*0000", "Dockyards_Tickets"),
         ("CARTE 01/01/70 ECGCOSTA4017507 CB*0000", "Ecgcosta"),
         ("CARTE 01/01/70 SUMUP *MACO CB*0000", "Maco"),
+        ("VIR INST ALAN SA", "Alan"),
+        ("PRLV SEPA Bouygues Telecom", "Bouygues Telecom"),
     ],
 )
 def test_transaction_correctly_parses_label(label, expected_payee):
@@ -185,6 +186,20 @@ def test_transaction_correctly_parses_virs(label, expected_memo):
     transaction = Transaction.from_label(label)
     assert transaction.payee is None
     assert transaction.memo == expected_memo
+
+
+@pytest.mark.parametrize(
+    ("label", "expected_payee"),
+    [
+        ("VIR INST ALAN SA", "Alan"),
+        ("PRLV SEPA Bouygues Telecom", "Bouygues Telecom"),
+    ],
+)
+def test_transaction_correctly_virs_and_prlv(label, expected_payee):
+    transaction = Transaction.from_label(label)
+    assert transaction.payee == expected_payee
+    assert transaction.date is None
+    assert transaction.memo is None
 
 
 def test_transaction_recognizes_paypal():
