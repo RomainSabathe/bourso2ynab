@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 
-from bourso2ynab.transaction import Transaction
 from bourso2ynab.io import read_bourso_transactions
+from bourso2ynab.transaction import Transaction, transactions_to_html
 
 bp = Blueprint("main", __name__, url_prefix="/")
 
@@ -15,9 +15,9 @@ def main():
 def upload_csv():
     csv_file = request.files["transactions-file"]
     df = read_bourso_transactions(filepath=csv_file.stream)
-    transaction = Transaction.from_pandas(df.iloc[0])
-
-    return render_template(
-        "review_transactions.html",
-        table=transaction.to_html(with_title=True, editable=True),
+    transactions = [Transaction.from_pandas(row) for _, row in df.iterrows()]
+    html_table = transactions_to_html(
+        transactions, with_table_tag=False, editable=True, with_title=True
     )
+
+    return render_template("review_transactions.html", table=html_table)
