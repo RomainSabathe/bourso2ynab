@@ -1,4 +1,5 @@
 import re
+import json
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Literal, Union, Optional, List
@@ -92,6 +93,12 @@ class Transaction:
             formatted_result["memo"] = "(via Paypal)"
 
         return Transaction(**formatted_result)
+
+    @staticmethod
+    def from_flask_json(entry: str):
+        # e.g. entry["date"] = "Thu, 01 Jan 1970 00:00:00 GMT"
+        _date = datetime.strptime(entry.pop("date"), "%a, %d %b %Y %H:%M:%S %Z").date()
+        return Transaction(date=_date, **entry)
 
     def to_html(
         self,

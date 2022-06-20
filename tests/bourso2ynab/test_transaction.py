@@ -521,3 +521,44 @@ def test_transactions_to_html_with_title():
     ]
 
     assert "\n".join(lines) == transactions_to_html(transactions, with_title=True)
+
+
+def test_from_flask_json():
+    input = {
+        "amount": -12.34,
+        "date": "Thu, 01 Jan 1970 00:00:00 GMT",
+        "index": 1,
+        "memo": "This is a memo",
+        "payee": "Monsieur",
+        "type": "CARTE",
+    }
+
+    expected_transaction = Transaction(
+        type="CARTE",
+        amount=-12.34,
+        date=date(year=1970, month=1, day=1),
+        payee="Monsieur",
+        memo="This is a memo",
+    )
+
+    assert expected_transaction == Transaction.from_flask_json(input)
+
+
+def test_from_flask_json_partial():
+    input = {
+        "amount": -12.34,
+        "date": "Thu, 01 Jan 1970 00:00:00 GMT",
+        "index": 1,
+        "memo": None,
+        "payee": "Monsieur",
+        "type": "CARTE",
+    }
+
+    expected_transaction = Transaction(
+        type="CARTE",
+        amount=-12.34,
+        date=date(year=1970, month=1, day=1),
+        payee="Monsieur",
+    )
+
+    assert expected_transaction == Transaction.from_flask_json(input)
