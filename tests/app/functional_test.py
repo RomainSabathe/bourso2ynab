@@ -4,7 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 
 
-@pytest.mark.nondestructive
+# @pytest.mark.nondestructive
+@pytest.mark.skip
 def test_submit_transactions(
     selenium, base_url, transactions_csv_filepath, ynab_mocker, env_mocker
 ):

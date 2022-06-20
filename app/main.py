@@ -47,12 +47,6 @@ def push_to_ynab():
     account_id = ynab.get_ynab_id(id_type="account", **kwargs)
     budget_id = ynab.get_ynab_id(id_type="budget", **kwargs)
 
-    import os
-    print(os.environ)
-    print(account_id)
-    print(ynab.push_to_ynab)
-    from time import sleep
-    sleep(10)
     result = ynab.push_to_ynab(transactions, account_id, budget_id)
 
     return render_template("confirmation.html", result=result)
