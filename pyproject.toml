@@ -1,0 +1,3 @@
+[tool.pytest.ini_options]
+sensitive_url = "example.com"
+addopts = "--cov=bourso2ynab --cov-report xml:cov.xml"
