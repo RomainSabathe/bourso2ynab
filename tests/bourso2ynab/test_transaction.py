@@ -11,6 +11,7 @@ from bourso2ynab.transaction import (
     is_valid_bourso_entry,
     make_import_ids_unique,
     format_amount,
+    transactions_to_html,
 )
 
 
@@ -302,14 +303,14 @@ def test_transaction_to_html_editable():
         "<td>",
         "<input ",
         'type="text"',
-        'name="payee-input-text"',
+        'name="payee-input-text-0"',
         'value="Monsieur"',
         ">",
         "</td>",
         "<td>",
         "<input ",
         'type="text"',
-        'name="memo-input-text"',
+        'name="memo-input-text-0"',
         'value="This is a test"',
         ">",
         "</td>",
@@ -343,3 +344,165 @@ def test_transaction_to_html_with_empty_fields():
     ]
 
     assert "\n".join(expected_lines) == transaction.to_html()
+
+
+def test_transactions_to_html_non_editable():
+    transactions = [
+        Transaction(
+            type="CARTE",
+            date=date(year=1970, month=1, day=1),
+            payee="Monsieur",
+        ),
+        Transaction(
+            type="CARTE",
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+        ),
+    ]
+
+    lines = [
+        "<tr>",
+        "<td>1970/01/01</td>",
+        "<td></td>",
+        "<td>Monsieur</td>",
+        "<td></td>",
+        "</tr>",
+        "<tr>",
+        "<td>1971/01/01</td>",
+        "<td></td>",
+        "<td>Madame</td>",
+        "<td></td>",
+        "</tr>",
+    ]
+
+    assert "\n".join(lines) == transactions_to_html(transactions, editable=False)
+
+
+def test_transactions_to_html_non_editable_with_table_tag():
+    transactions = [
+        Transaction(
+            type="CARTE",
+            date=date(year=1970, month=1, day=1),
+            payee="Monsieur",
+        ),
+        Transaction(
+            type="CARTE",
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+        ),
+    ]
+
+    lines = [
+        "<table>",
+        "<tr>",
+        "<td>1970/01/01</td>",
+        "<td></td>",
+        "<td>Monsieur</td>",
+        "<td></td>",
+        "</tr>",
+        "<tr>",
+        "<td>1971/01/01</td>",
+        "<td></td>",
+        "<td>Madame</td>",
+        "<td></td>",
+        "</tr>",
+        "</table>",
+    ]
+
+    assert "\n".join(lines) == transactions_to_html(
+        transactions, editable=False, with_table_tag=True
+    )
+
+
+def test_transactions_to_html_editable():
+    transactions = [
+        Transaction(
+            type="CARTE",
+            date=date(year=1970, month=1, day=1),
+            payee="Monsieur",
+        ),
+        Transaction(
+            type="CARTE",
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+        ),
+    ]
+
+    lines = [
+        "<tr>",
+        "<td>1970/01/01</td>",
+        "<td></td>",
+        "<td>",
+        "<input ",
+        'type="text"',
+        'name="payee-input-text-0"',
+        'value="Monsieur"',
+        ">",
+        "</td>",
+        "<td>",
+        "<input ",
+        'type="text"',
+        'name="memo-input-text-0"',
+        'value=""',
+        ">",
+        "</td>",
+        "</tr>",
+        "<tr>",
+        "<td>1971/01/01</td>",
+        "<td></td>",
+        "<td>",
+        "<input ",
+        'type="text"',
+        'name="payee-input-text-1"',
+        'value="Madame"',
+        ">",
+        "</td>",
+        "<td>",
+        "<input ",
+        'type="text"',
+        'name="memo-input-text-1"',
+        'value=""',
+        ">",
+        "</td>",
+        "</tr>",
+    ]
+
+    assert "\n".join(lines) == transactions_to_html(transactions, editable=True)
+
+
+def test_transactions_to_html_with_title():
+    transactions = [
+        Transaction(
+            type="CARTE",
+            date=date(year=1970, month=1, day=1),
+            payee="Monsieur",
+        ),
+        Transaction(
+            type="CARTE",
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+        ),
+    ]
+
+    lines = [
+        "<tr>",
+        "<th>Date</th>",
+        "<th>Amount</th>",
+        "<th>Payee</th>",
+        "<th>Memo</th>",
+        "</tr>",
+        "<tr>",
+        "<td>1970/01/01</td>",
+        "<td></td>",
+        "<td>Monsieur</td>",
+        "<td></td>",
+        "</tr>",
+        "<tr>",
+        "<td>1971/01/01</td>",
+        "<td></td>",
+        "<td>Madame</td>",
+        "<td></td>",
+        "</tr>",
+    ]
+
+    assert "\n".join(lines) == transactions_to_html(transactions, with_title=True)

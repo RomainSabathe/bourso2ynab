@@ -92,7 +92,12 @@ class Transaction:
 
         return Transaction(**formatted_result)
 
-    def to_html(self, with_title: bool = False, editable: bool = False) -> str:
+    def to_html(
+        self,
+        with_title: bool = False,
+        editable: bool = False,
+        position: int = 0,
+    ) -> str:
         safe_str = lambda x: x if x is not None else ""
         formatted_date = safe_str(
             self.date.strftime("%Y/%m/%d") if self.date is not None else None
@@ -127,7 +132,7 @@ class Transaction:
                 "<td>",
                 "<input ",
                 'type="text"',
-                f'name="{name}-input-text"',
+                f'name="{name}-input-text-{position}"',
                 f'value="{content}"',
                 ">",
                 "</td>",
@@ -243,3 +248,20 @@ def make_import_ids_unique(transactions: List[Transaction]) -> List[Transaction]
         new_transactions.append(new_transaction)
 
     return new_transactions
+
+
+def transactions_to_html(
+    transactions: List[Transaction],
+    with_table_tag: bool = False,
+    with_title: bool = False,
+    **kwargs,
+) -> str:
+    lines = [
+        transaction.to_html(position=i, with_title=(i == 0 and with_title), **kwargs)
+        for (i, transaction) in enumerate(transactions)
+    ]
+
+    if with_table_tag:
+        lines = ["<table>", *lines, "</table>"]
+
+    return "\n".join(lines)
