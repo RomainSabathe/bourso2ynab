@@ -1,19 +1,46 @@
+from flask import session
+
+
 def test_display_home_page(client):
     response = client.get("/")
     assert "<h1>Bourso2Ynab</h1>" in response.text
     assert "Select your Boursorama transactions" in response.text
 
 
-def test_submit_csv_for(client, transactions_csv_filepath):
-    response = client.post(
-        "/csv/upload",
-        data={
-            "transactions-file": transactions_csv_filepath.open("rb"),
-            "username": "romain",
-            "account-type": "perso",
-        },
-    )
+def test_submit_csv(client, transactions_csv_filepath):
+    with client:  # Why the context manager? To be able to retrieve the session.
+        response = client.post(
+            "/csv/upload",
+            data={
+                "transactions-file": transactions_csv_filepath.open("rb"),
+                "username": "romain",
+                "account-type": "perso",
+            },
+        )
+        transactions = session["transactions"]
+
     assert "<table>" in response.text
     assert "<td>2022/06/13</td>" in response.text
     assert "<td>2022/06/11</td>" in response.text
     assert 'value="Ratp"' in response.text
+
+    assert len(transactions) == 5
+    assert transactions[0].payee == "Franprix"
+    assert transactions[0].amount == -11.64
+    assert transactions[1].payee == "Monsieur Fromage"
+    assert transactions[1].amount == -10.00
+
+
+# def test_push_to_ynab(client):
+#     response = client.post(
+#         "/ynab/push",
+#         data={
+#             "payee-input-text-0": "Monsieur",
+#             "memo-input-text-0": "This is a memo",
+#             "payee-input-text-1": "Madame",
+#             "memo-input-text-1": "",
+#         },
+#     )
+
+#     import ipdb; ipdb.set_trace()
+#     pass
