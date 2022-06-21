@@ -110,5 +110,6 @@ def env_mocker(mocker):
             os.environ.pop("YNAB_API_KEY")
 
     mocker.patch("bourso2ynab.main.load_dotenv", mocked_load_dotenv)
+    mocker.patch("app.main.load_dotenv", mocked_load_dotenv)
 
     yield

@@ -51,6 +51,13 @@ def push_to_ynab():
 
     return render_template("confirmation.html", result=result)
 
+@bp.route("/db/create")
+def create_db():
+    from app.db import db
+    db.create_all()
+    return render_template("submit_csv.html")
+
+
 def _get_transactions_from_session() -> List[Transaction]:
     # When passing transactions to a session, Flask automatically
     # convert them to dicts (because Transaction is a dataclass).

@@ -83,3 +83,6 @@ def test_push_to_ynab_without_modifying_entries(client, ynab_mocker):
 
     assert "All done!" in response.text
     assert "This is a memo" in response.text
+
+def test_create_db(client):
+    response = client.get("/db/create")

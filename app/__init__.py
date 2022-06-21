@@ -6,9 +6,11 @@ import logging
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
+from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request, session
 
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)
+
 load_dotenv()
 
 
@@ -16,6 +18,7 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.secret_key = os.environ["APP_SECRET_KEY"]
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.sqlite3"
 
     # ensure the instance folder exists
     try:
@@ -24,34 +27,35 @@ def create_app(test_config=None):
         pass
 
     from . import main
+
     app.register_blueprint(main.bp)
 
-        # if request.method == "POST":
-        #     if request.form["form_type"] == "transactions_upload":
-        #         return display_transactions()
-        #     if request.form["form_type"] == "transactions_validation":
-        #         df = load_table_and_update_payee_formatter()
-        #         logging.info("Finished formatting transactions. Now sending to YNAB...")
-        #         api_response = upload_transactions(
-        #             df,
-        #             username=session["username"],
-        #             account_type=session["account_type"],
-        #         )
-        #         api_response = api_response.to_dict()
+    # if request.method == "POST":
+    #     if request.form["form_type"] == "transactions_upload":
+    #         return display_transactions()
+    #     if request.form["form_type"] == "transactions_validation":
+    #         df = load_table_and_update_payee_formatter()
+    #         logging.info("Finished formatting transactions. Now sending to YNAB...")
+    #         api_response = upload_transactions(
+    #             df,
+    #             username=session["username"],
+    #             account_type=session["account_type"],
+    #         )
+    #         api_response = api_response.to_dict()
 
-        #         nb_new_entries = len(api_response["data"]["transactions"])
-        #         nb_duplicates = len(api_response["data"]["duplicate_import_ids"])
-        #         logging.info(
-        #             f"User: {session['username']}, Account type: {session['account_type']} - "
-        #             f"Sent {nb_new_entries + nb_duplicates} transactions with {nb_new_entries} being new."
-        #         )
-        #         session.clear()
-        #     return render_template(
-        #         "base.html",
-        #         api_response=json.dumps(api_response, indent=4, default=str),
-        #     )
+    #         nb_new_entries = len(api_response["data"]["transactions"])
+    #         nb_duplicates = len(api_response["data"]["duplicate_import_ids"])
+    #         logging.info(
+    #             f"User: {session['username']}, Account type: {session['account_type']} - "
+    #             f"Sent {nb_new_entries + nb_duplicates} transactions with {nb_new_entries} being new."
+    #         )
+    #         session.clear()
+    #     return render_template(
+    #         "base.html",
+    #         api_response=json.dumps(api_response, indent=4, default=str),
+    #     )
 
-        # return render_template("base.html")
+    # return render_template("base.html")
 
     return app
 
