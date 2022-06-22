@@ -340,6 +340,8 @@ def test_format_amount():
     assert format_amount("-2") == -2.00
     assert format_amount("-2.00") == -2.00
     assert format_amount("2,12") == 2.12
+    assert format_amount("1 234") == 1234.00
+    assert format_amount("1 234.56") == 1234.56
 
 
 def test_transaction_to_html_with_empty_fields():

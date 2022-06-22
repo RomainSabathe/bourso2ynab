@@ -223,6 +223,7 @@ def format_amount(amount: Union[float, str]) -> float:
         return amount
 
     amount = amount.replace(",", ".")  # French uses a comma
+    amount = amount.replace(" ", "")  # A space is used for separating thousands
     return float(amount)
 
 
