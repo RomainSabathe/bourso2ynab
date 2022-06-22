@@ -29,6 +29,7 @@ def upload_csv():
     df = read_bourso_transactions(filepath=csv_file.stream)
     transactions = [Transaction.from_pandas(row) for _, row in df.iterrows()]
     transactions = sorted(transactions, key=lambda x: x.date)
+    transactions = _update_transactions_based_on_db(transactions)
     session["transactions"] = transactions
 
     html_table = transactions_to_html(
@@ -100,3 +101,20 @@ def _update_db_based_on_transactions_changes(
             else:
                 key = list(existing_entries.keys())[0]
                 db.update_by_id(key, {"adjusted": new.payee})
+
+
+def _update_transactions_based_on_db(transactions: List[Transaction]):
+    updated_transactions = deepcopy(transactions)
+
+    for i, transaction in enumerate(updated_transactions):
+        entries = db.get_by_query(lambda data: data["original"] == transaction.payee)
+        if not entries:
+            continue
+
+        key = list(entries.keys())[0]
+        entry = db.get_by_id(key)
+        updated_transactions[i].payee = entry["adjusted"]
+
+    return updated_transactions
+
+

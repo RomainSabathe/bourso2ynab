@@ -5,6 +5,7 @@ from flask import session
 
 from bourso2ynab.transaction import Transaction
 from app.main import (
+    _update_transactions_based_on_db,
     _update_transactions_based_on_form,
     _update_db_based_on_transactions_changes,
 )
@@ -303,7 +304,7 @@ def test_db_changes_are_persistent_over_multiple_requests(
     response = client.post(
         "/csv/upload",
         data={
-            "transactions-file": transactions_csv_filepath.open("rb"),
+            "transactions-file": modified_csv_filepath.open("rb"),
             "username": "romain",
             "account-type": "perso",
         },
@@ -415,3 +416,37 @@ def test_update_db_based_on_transactions_changes_when_entry_already_exists(db):
     entry = entries[key]
     assert entry["original"] == "Sncf"
     assert entry["adjusted"] == "Chemin de Fer"
+
+    
+def test_update_transactions_based_on_db(db):
+    db.add({"original": "Monsieur", "adjusted": "John"})
+
+    transactions = [
+        Transaction(
+            type="CARTE",
+            amount=-12.34,
+            date=date(year=1970, month=1, day=1),
+            payee="Monsieur",
+            memo="This is a memo",
+        ),
+        Transaction(
+            type="CARTE",
+            amount=-2.43,
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+        ),
+    ]
+
+    updated_transactions = _update_transactions_based_on_db(transactions)
+
+    assert transactions[0].payee == "Monsieur"
+    assert updated_transactions[0].payee == "John"
+
+    assert transactions[0].memo == "This is a memo"
+    assert updated_transactions[0].memo == "This is a memo"
+
+    assert transactions[1].payee == "Madame"
+    assert updated_transactions[1].payee == "Madame"
+
+    assert transactions[1].memo is None
+    assert updated_transactions[1].memo is None
