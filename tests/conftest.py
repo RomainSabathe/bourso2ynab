@@ -29,7 +29,7 @@ def client(app):
 
 
 @pytest.fixture
-def db(tmpdir):
+def db(tmpdir, mocker):
     _db = PysonDB(tmpdir / "db.json")
 
     # Setting up initial data.
@@ -39,6 +39,8 @@ def db(tmpdir):
             {"original": "Redemption Ro", "adjusted": "Redemption Roasters"},
         ]
     )
+
+    mocker.patch("app.main.db", _db)
 
     return _db
 

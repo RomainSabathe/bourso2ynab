@@ -1,1 +1,8 @@
-"""For the sake of simplicity, we create a "DB" based on json."""
+import os
+
+from pysondb import PysonDB
+from dotenv import load_dotenv
+
+load_dotenv()
+
+db = PysonDB(os.environ["DB_FILEPATH"])

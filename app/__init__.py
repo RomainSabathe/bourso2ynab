@@ -20,7 +20,6 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.secret_key = os.environ["APP_SECRET_KEY"]
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.sqlite3"
 
     # ensure the instance folder exists
     try:

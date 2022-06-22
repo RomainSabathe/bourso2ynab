@@ -4,6 +4,10 @@ from datetime import date
 from flask import session
 
 from bourso2ynab.transaction import Transaction
+from app.main import (
+    _update_transactions_based_on_form,
+    _update_db_based_on_transactions_changes,
+)
 
 
 def test_display_home_page(client):
@@ -85,6 +89,45 @@ def test_push_to_ynab_without_modifying_entries(client, ynab_mocker):
     assert "All done!" in response.text
     assert "This is a memo" in response.text
     assert "Monsieur" in response.text
+
+
+def test_update_transactions_based_on_form():
+    transactions = [
+        Transaction(
+            type="CARTE",
+            amount=-12.34,
+            date=date(year=1970, month=1, day=1),
+            payee="Monsieur",
+            memo="This is a memo",
+        ),
+        Transaction(
+            type="CARTE",
+            amount=-2.43,
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+        ),
+    ]
+
+    form_result = {
+        "payee-input-text-0": "John",  # This has changed
+        "memo-input-text-0": "This is a memo",
+        "payee-input-text-1": "Madame",
+        "memo-input-text-1": "This is a memo that didn't exist before",  # Changed.
+    }
+
+    updated_transactions = _update_transactions_based_on_form(transactions, form_result)
+
+    assert transactions[0].payee == "Monsieur"
+    assert updated_transactions[0].payee == "John"
+
+    assert transactions[0].memo == "This is a memo"
+    assert updated_transactions[0].memo == "This is a memo"
+
+    assert transactions[1].payee == "Madame"
+    assert updated_transactions[1].payee == "Madame"
+
+    assert transactions[1].memo is None
+    assert updated_transactions[1].memo == "This is a memo that didn't exist before"
 
 
 def test_push_to_ynab_when_modifying_entries_modifies_the_payee_sent_to_ynab(
@@ -268,3 +311,107 @@ def test_db_changes_are_persistent_over_multiple_requests(
 
     assert 'value="John"' in response.text
     assert 'value="Monsieur"' not in response.text
+
+
+def test_update_db_based_on_transactions_changes(db):
+    # The DB doesn't contain the "Monsieur" entry.
+    assert len(db.get_by_query(lambda data: data["original"] == "Monsieur")) == 0
+
+    transactions = [
+        Transaction(
+            type="CARTE",
+            amount=-12.34,
+            date=date(year=1970, month=1, day=1),
+            payee="Monsieur",
+            memo="This is a memo",
+        ),
+        Transaction(
+            type="CARTE",
+            amount=-2.43,
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+        ),
+    ]
+
+    updated_transactions = [
+        Transaction(
+            type="CARTE",
+            amount=-12.34,
+            date=date(year=1970, month=1, day=1),
+            payee="John",
+            memo="This is a memo",
+        ),
+        Transaction(
+            type="CARTE",
+            amount=-2.43,
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+            memo="This is a memo that didn't exist before",
+        ),
+    ]
+
+    _update_db_based_on_transactions_changes(transactions, updated_transactions)
+
+    entries = db.get_by_query(lambda data: data["original"] == "Monsieur")
+    assert len(entries) == 1
+
+    key = list(entries.keys())[0]
+    entry = entries[key]
+    assert entry["original"] == "Monsieur"
+    assert entry["adjusted"] == "John"
+
+
+def test_update_db_based_on_transactions_changes_when_entry_already_exists(db):
+    # The DB contains a "Sncf" entry
+    assert len(db.get_all()) == 2
+    entries = db.get_by_query(lambda data: data["original"] == "Sncf")
+    assert len(entries) == 1
+
+    key = list(entries.keys())[0]
+    entry = entries[key]
+    assert entry["original"] == "Sncf"
+    assert entry["adjusted"] == "SNCF"
+
+    transactions = [
+        Transaction(
+            type="CARTE",
+            amount=-12.34,
+            date=date(year=1970, month=1, day=1),
+            payee="Sncf",
+            memo="This is a memo",
+        ),
+        Transaction(
+            type="CARTE",
+            amount=-2.43,
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+        ),
+    ]
+
+    updated_transactions = [
+        Transaction(
+            type="CARTE",
+            amount=-12.34,
+            date=date(year=1970, month=1, day=1),
+            payee="Chemin de Fer",
+            memo="This is a memo",
+        ),
+        Transaction(
+            type="CARTE",
+            amount=-2.43,
+            date=date(year=1971, month=1, day=1),
+            payee="Madame",
+            memo="This is a memo that didn't exist before",
+        ),
+    ]
+
+    _update_db_based_on_transactions_changes(transactions, updated_transactions)
+
+    assert len(db.get_all()) == 2
+    entries = db.get_by_query(lambda data: data["original"] == "Sncf")
+    assert len(entries) == 1
+
+    key = list(entries.keys())[0]
+    entry = entries[key]
+    assert entry["original"] == "Sncf"
+    assert entry["adjusted"] == "Chemin de Fer"
