@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request, session
 
+from app import main
+
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.DEBUG)
 
 load_dotenv()
@@ -25,8 +27,6 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-    from . import main
 
     app.register_blueprint(main.bp)
 

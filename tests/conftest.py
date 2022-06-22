@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from flask import request
+from pysondb import PysonDB
 import flask.json as flask_json
 from dotenv import load_dotenv
 
@@ -15,8 +16,9 @@ from bourso2ynab.ynab import get_ynab_id
 
 
 @pytest.fixture()
-def app():
+def app(tmpdir):
     app = create_app()
+
     app.config.update({"TESTING": True})
     yield app
 
@@ -24,6 +26,21 @@ def app():
 @pytest.fixture()
 def client(app):
     return app.test_client()
+
+
+@pytest.fixture
+def db(tmpdir):
+    _db = PysonDB(tmpdir / "db.json")
+
+    # Setting up initial data.
+    _db.add_many(
+        [
+            {"original": "Sncf", "adjusted": "SNCF"},
+            {"original": "Redemption Ro", "adjusted": "Redemption Roasters"},
+        ]
+    )
+
+    return _db
 
 
 @pytest.fixture
