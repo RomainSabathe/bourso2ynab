@@ -187,6 +187,19 @@ def test_transaction_correctly_parses_virs(label, expected_memo):
     assert transaction.payee is None
     assert transaction.memo == expected_memo
 
+def test_transaction_returns_raw_labels_when_failing_to_parse():
+        label = "ZEN 01/01/70 DOCKYARDS_TICKETS CB*0000"
+        transaction = Transaction.from_label(label)
+        assert transaction.payee == label
+        assert transaction.memo is None
+
+        label ="VIREMENT INST ALAN SA"
+        transaction = Transaction.from_label(label)
+        assert transaction.payee == label
+        assert transaction.memo is None
+
+        # This test could probably do with added cases.
+
 
 @pytest.mark.parametrize(
     ("label", "expected_payee"),

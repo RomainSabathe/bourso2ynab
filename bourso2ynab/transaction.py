@@ -18,7 +18,7 @@ class InvalidBoursoTransaction(Exception):
 TransactionType = Literal["VIR", "CARTE", "RETRAIT"]
 
 TRANSACTION_LABEL_PATTERN = (
-    r"^(?P<transaction_type>((CARTE)|(VIR)|(RETRAIT)|(PRLV)))\s?"
+    r"^(?P<transaction_type>((CARTE)|(VIR)|(RETRAIT)|(PRLV)))\s"
     r"(INST\s)?"  # In case of a VIR, the format is: "VIR INST 01/01/70 Payee ..."
     r"(SEPA\s)?"  # In case of a PRLV, the format is: "PRLV SEPA Payee ..."
     r"(?P<date>\d{2}/\d{2}/\d{2})?\s?"
@@ -73,8 +73,16 @@ class Transaction:
         )
 
     @staticmethod
-    def from_label(label: str):
+    def from_label(label: str, errors: Literal["coerce", "raise"] = "coerce"):
         result = TRANSACTION_LABEL_PROG.match(label.strip())
+
+        if result is None:
+            # Unhappy path: parsing has failed.
+            if "errors" == "raise":
+                raise ValueError(f"Can't parse Transaction from label: {label}")
+            return Transaction(type=None, date=None, payee=label)
+
+        # Happy path: parsing has succedeed.
         result = result.groupdict()
 
         is_VIR = result["transaction_type"] == "VIR"
@@ -93,6 +101,8 @@ class Transaction:
             formatted_result["memo"] = "(via Paypal)"
 
         return Transaction(**formatted_result)
+
+
 
     @staticmethod
     def from_flask_json(entry: str):
