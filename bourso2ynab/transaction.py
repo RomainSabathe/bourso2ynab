@@ -78,7 +78,7 @@ class Transaction:
 
         if result is None:
             # Unhappy path: parsing has failed.
-            if "errors" == "raise":
+            if errors == "raise":
                 raise ValueError(f"Can't parse Transaction from label: {label}")
             return Transaction(type=None, date=None, payee=label)
 
