@@ -1,8 +1,11 @@
 import shutil
+import functools
 from datetime import date
 
 from flask import session
+import flask.json as flask_json
 
+from bourso2ynab.ynab import get_ynab_id
 from bourso2ynab.transaction import Transaction
 from app.main import (
     _update_transactions_based_on_db,
@@ -90,6 +93,102 @@ def test_push_to_ynab_without_modifying_entries(client, ynab_mocker):
     assert "All done!" in response.text
     assert "This is a memo" in response.text
     assert "Monsieur" in response.text
+
+
+def test_push_to_ynab_with_perso_account_updates_one_account(
+    client,
+    mocker,
+    ynab_secrets_filepath,
+    ynab_mocker,
+):
+    global call_counter
+    call_counter = 0
+
+    def mock_push_to_ynab(transactions, account_id, budget_id):
+        global call_counter
+        call_counter += 1
+        return call_counter
+
+    mocker.patch("app.main.ynab.push_to_ynab", mock_push_to_ynab)
+
+    with client.session_transaction() as session:
+        session["transactions"] = [
+            Transaction(
+                type="CARTE",
+                amount=-12.34,
+                date=date(year=1970, month=1, day=1),
+                payee="Monsieur",
+                memo="This is a memo",
+            ),
+            Transaction(
+                type="CARTE",
+                amount=-2.43,
+                date=date(year=1971, month=1, day=1),
+                payee="Madame",
+            ),
+        ]
+        session["username"] = "user1"
+        session["account-type"] = "perso"
+
+    response = client.post(
+        "/ynab/push",
+        data={
+            "payee-input-text-0": "Monsieur",
+            "memo-input-text-0": "This is a memo",
+            "payee-input-text-1": "Madame",
+            "memo-input-text-1": "",
+        },
+    )
+
+    assert call_counter == 1
+
+
+def test_push_to_ynab_with_joint_account_updates_two_accounts(
+    client,
+    mocker,
+    ynab_secrets_filepath,
+    ynab_mocker,
+):
+    global call_counter
+    call_counter = 0
+
+    def mock_push_to_ynab(transactions, account_id, budget_id):
+        global call_counter
+        call_counter += 1
+        return call_counter
+
+    mocker.patch("app.main.ynab.push_to_ynab", mock_push_to_ynab)
+
+    with client.session_transaction() as session:
+        session["transactions"] = [
+            Transaction(
+                type="CARTE",
+                amount=-12.34,
+                date=date(year=1970, month=1, day=1),
+                payee="Monsieur",
+                memo="This is a memo",
+            ),
+            Transaction(
+                type="CARTE",
+                amount=-2.43,
+                date=date(year=1971, month=1, day=1),
+                payee="Madame",
+            ),
+        ]
+        session["username"] = "user1"
+        session["account-type"] = "joint"
+
+    response = client.post(
+        "/ynab/push",
+        data={
+            "payee-input-text-0": "Monsieur",
+            "memo-input-text-0": "This is a memo",
+            "payee-input-text-1": "Madame",
+            "memo-input-text-1": "",
+        },
+    )
+
+    assert call_counter == 2
 
 
 def test_update_transactions_based_on_form():
@@ -417,7 +516,7 @@ def test_update_db_based_on_transactions_changes_when_entry_already_exists(db):
     assert entry["original"] == "Sncf"
     assert entry["adjusted"] == "Chemin de Fer"
 
-    
+
 def test_update_transactions_based_on_db(db):
     db.add({"original": "Monsieur", "adjusted": "John"})
 

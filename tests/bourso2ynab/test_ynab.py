@@ -6,10 +6,10 @@ from datetime import date
 from ynab_api.model.save_transactions_wrapper import SaveTransactionsWrapper
 
 from bourso2ynab.transaction import Transaction
-from bourso2ynab.ynab import get_ynab_id, push_to_ynab
+from bourso2ynab.ynab import get_ynab_id, push_to_ynab, get_all_available_usernames
 
 
-def test_get_ynab_id(tmpdir, ynab_secrets_filepath):
+def test_get_ynab_id(ynab_secrets_filepath):
     kwargs = {"username": "user1", "secrets_path": ynab_secrets_filepath}
     assert get_ynab_id(id_type="budget", **kwargs) == "abcd"
     assert get_ynab_id(id_type="accounts", account_type="perso", **kwargs) == "0123"
@@ -19,6 +19,11 @@ def test_get_ynab_id(tmpdir, ynab_secrets_filepath):
     assert get_ynab_id(id_type="budget", **kwargs) == "7890"
     assert get_ynab_id(id_type="accounts", account_type="perso", **kwargs) == "0000"
     assert get_ynab_id(id_type="accounts", account_type="joint", **kwargs) == "1111"
+
+
+def test_get_all_available_usernames(ynab_secrets_filepath):
+    usernames = get_all_available_usernames(ynab_secrets_filepath)
+    assert usernames == ["user1", "user2"]
 
 
 def test_push_to_ynab(mocker):

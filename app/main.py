@@ -50,14 +50,17 @@ def push_to_ynab():
     _update_db_based_on_transactions_changes(transactions, updated_transactions)
 
     # Retrieving YNAB credentials.
-    username = session["username"]
     account_type = session["account-type"]
-    kwargs = {"username": username, "account_type": account_type}
+    usernames = [session["username"]]
+    if account_type == "joint":
+        usernames = ynab.get_all_available_usernames()
 
-    account_id = ynab.get_ynab_id(id_type="account", **kwargs)
-    budget_id = ynab.get_ynab_id(id_type="budget", **kwargs)
+    for username in usernames:
+        kwargs = {"username": username, "account_type": account_type}
+        account_id = ynab.get_ynab_id(id_type="account", **kwargs)
+        budget_id = ynab.get_ynab_id(id_type="budget", **kwargs)
 
-    result = ynab.push_to_ynab(updated_transactions, account_id, budget_id)
+        result = ynab.push_to_ynab(updated_transactions, account_id, budget_id)
 
     return render_template("confirmation.html", result=result)
 
@@ -116,5 +119,3 @@ def _update_transactions_based_on_db(transactions: List[Transaction]):
         updated_transactions[i].payee = entry["adjusted"]
 
     return updated_transactions
-
-

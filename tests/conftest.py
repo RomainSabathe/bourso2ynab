@@ -12,7 +12,7 @@ import flask.json as flask_json
 from dotenv import load_dotenv
 
 from app import create_app
-from bourso2ynab.ynab import get_ynab_id
+from bourso2ynab.ynab import get_all_available_usernames, get_ynab_id
 
 
 @pytest.fixture()
@@ -112,6 +112,12 @@ def ynab_mocker(mocker, ynab_secrets_filepath):
     mocker.patch(
         "app.main.ynab.get_ynab_id",
         functools.partial(get_ynab_id, secrets_path=ynab_secrets_filepath),
+    )
+    mocker.patch(
+        "app.main.ynab.get_all_available_usernames",
+        functools.partial(
+            get_all_available_usernames, secrets_path=ynab_secrets_filepath
+        ),
     )
     mocker.patch(
         "app.main.ynab.push_to_ynab",

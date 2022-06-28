@@ -18,7 +18,7 @@ def get_ynab_id(
     id_type: Literal["budget", "account"],
     username: str,
     account_type: Optional[Literal["perso", "joint"]] = None,
-    secrets_path: Path = Path("secrets.json")
+    secrets_path: Path = Path("secrets.json"),
 ) -> str:
     """Utility function to retrieve YNAB IDs from within the env vars."""
     with secrets_path.open("r") as f:
@@ -29,6 +29,17 @@ def get_ynab_id(
         account_type is not None
     ), "An account type (perso/joint) is required when accessing Accounts."
     return secrets["accounts"][username][account_type]
+
+
+def get_all_available_usernames(secrets_path: Path = Path("secrets.json")) -> List[str]:
+    with secrets_path.open("r") as f:
+        secrets = json.load(f)
+
+    usernames = []
+    for username, _ in secrets["budgets"].items():
+        usernames.append(username)
+
+    return usernames
 
 
 def push_to_ynab(transactions: List[Transaction], account_id: str, budget_id: str):
