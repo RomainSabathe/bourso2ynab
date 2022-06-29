@@ -9,8 +9,6 @@ from ynab_api.api.transactions_api import TransactionsApi
 from ynab_api.model.save_transaction import SaveTransaction
 from ynab_api.model.save_transactions_wrapper import SaveTransactionsWrapper
 
-import pandas as pd
-
 from bourso2ynab.transaction import Transaction, make_import_ids_unique
 
 
@@ -40,6 +38,23 @@ def get_all_available_usernames(secrets_path: Path = Path("secrets.json")) -> Li
         usernames.append(username)
 
     return usernames
+
+
+def get_all_available_account_types(
+    secrets_path: Path = Path("secrets.json"),
+) -> List[str]:
+    with secrets_path.open("r") as f:
+        secrets = json.load(f)
+
+    account_types = []
+    usernames = get_all_available_usernames(secrets_path)
+    for username in usernames:
+        for account_type, _ in secrets["accounts"][username].items():
+            # I don't use a `set` because I want to preserve ordering.
+            if account_type not in account_types:
+                account_types.append(account_type)
+
+    return account_types
 
 
 def push_to_ynab(transactions: List[Transaction], account_id: str, budget_id: str):

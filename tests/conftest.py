@@ -12,7 +12,11 @@ import flask.json as flask_json
 from dotenv import load_dotenv
 
 from app import create_app
-from bourso2ynab.ynab import get_all_available_usernames, get_ynab_id
+from bourso2ynab.ynab import (
+    get_ynab_id,
+    get_all_available_usernames,
+    get_all_available_account_types,
+)
 
 
 @pytest.fixture()
@@ -97,8 +101,8 @@ def ynab_secrets_filepath(tmpdir):
             "user2": "7890",
         },
         "accounts": {
-            "user1": {"perso": "0123", "joint": "4567"},
-            "user2": {"perso": "0000", "joint": "1111"},
+            "user1": {"perso": "0123", "joint": "4567", "fancy": "abcd"},
+            "user2": {"perso": "0000", "joint": "1111", "fancy": "deab"},
         },
     }
     with (tmpdir / "secrets.json").open("w") as f:
@@ -110,17 +114,23 @@ def ynab_secrets_filepath(tmpdir):
 @pytest.fixture
 def ynab_mocker(mocker, ynab_secrets_filepath):
     mocker.patch(
-        "app.main.ynab.get_ynab_id",
+        "app.main.get_ynab_id",
         functools.partial(get_ynab_id, secrets_path=ynab_secrets_filepath),
     )
     mocker.patch(
-        "app.main.ynab.get_all_available_usernames",
+        "app.main.get_all_available_usernames",
         functools.partial(
             get_all_available_usernames, secrets_path=ynab_secrets_filepath
         ),
     )
     mocker.patch(
-        "app.main.ynab.push_to_ynab",
+        "app.main.get_all_available_account_types",
+        functools.partial(
+            get_all_available_account_types, secrets_path=ynab_secrets_filepath
+        ),
+    )
+    mocker.patch(
+        "app.main._push_to_ynab",
         lambda transactions, account_id, budget_id: flask_json.dumps(transactions),
     )
 

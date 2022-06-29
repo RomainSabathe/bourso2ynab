@@ -6,7 +6,12 @@ from flask import Blueprint, render_template, request, session
 
 from app.database import db
 
-from bourso2ynab import ynab
+from bourso2ynab.ynab import (
+    get_all_available_usernames,
+    get_all_available_account_types,
+    get_ynab_id,
+)
+from bourso2ynab.ynab import push_to_ynab as _push_to_ynab
 from bourso2ynab.io import read_bourso_transactions
 from bourso2ynab.transaction import Transaction, transactions_to_html
 
@@ -15,7 +20,11 @@ bp = Blueprint("main", __name__, url_prefix="/")
 
 @bp.route("/", methods=["GET"])
 def main():
-    return render_template("submit_csv.html")
+    return render_template(
+        "submit_csv.html",
+        usernames=get_all_available_usernames(),
+        account_types=get_all_available_account_types(),
+    )
 
 
 @bp.route("/csv/upload", methods=["POST"])
@@ -53,14 +62,14 @@ def push_to_ynab():
     account_type = session["account-type"]
     usernames = [session["username"]]
     if account_type == "joint":
-        usernames = ynab.get_all_available_usernames()
+        usernames = get_all_available_usernames()
 
     for username in usernames:
         kwargs = {"username": username, "account_type": account_type}
-        account_id = ynab.get_ynab_id(id_type="account", **kwargs)
-        budget_id = ynab.get_ynab_id(id_type="budget", **kwargs)
+        account_id = get_ynab_id(id_type="account", **kwargs)
+        budget_id = get_ynab_id(id_type="budget", **kwargs)
 
-        result = ynab.push_to_ynab(updated_transactions, account_id, budget_id)
+        result = _push_to_ynab(updated_transactions, account_id, budget_id)
 
     return render_template("confirmation.html", result=result)
 

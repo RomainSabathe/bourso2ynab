@@ -1,6 +1,4 @@
-{% extends 'base.html' %}
-
-{% block left_side %}
+{% extends 'base.html' %} {% block left_side %}
 
 <form
   action="{{ url_for('main.upload_csv') }}"
@@ -17,46 +15,32 @@
 
   <fieldset id="username-selection-box">
     <legend>I am</legend>
-    <label for="romain">
+    {% for username in usernames %}
+    <label for="{{ username }}">
       <input
         type="radio"
-        id="romain-username-radio"
+        id="{{ username }}-username-radio"
         name="username"
-        value="romain"
+        value="{{ username }}"
       />
-      Romain
+      {{ username.title() }}
     </label>
-    <label for="ginette">
-      <input
-        type="radio"
-        id="ginette-username-radio"
-        name="username"
-        value="ginette"
-      />
-      ginette
-    </label>
+    {% endfor %}
   </fieldset>
 
   <fieldset id="account-type-selection-box">
     <legend>Account type</legend>
-    <label for="perso">
+    {% for account_type in account_types %}
+    <label for="{{ account_type }}">
       <input
         type="radio"
-        id="perso-account-type-radio"
+        id="{{ account_type }}-account-type-radio"
         name="account-type"
-        value="perso"
+        value="{{ account_type }}"
       />
-      Perso
+      {{ account_type.title() }}
     </label>
-    <label for="joint">
-      <input
-        type="radio"
-        id="joint-account-type-radio"
-        name="account-type"
-        value="joint"
-      />
-      Joint
-    </label>
+    {% endfor %}
   </fieldset>
 
   <br />

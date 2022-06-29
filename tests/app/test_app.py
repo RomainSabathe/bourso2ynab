@@ -20,6 +20,32 @@ def test_display_home_page(client):
     assert "Select your Boursorama transactions" in response.text
 
 
+def test_home_page_shows_available_users(client, ynab_mocker):
+    response = client.get("/")
+    assert 'value="user1"' in response.text
+    assert 'id="user1-username-radio' in response.text
+    assert 'User1' in response.text
+
+    assert 'value="user2"' in response.text
+    assert 'id="user2-username-radio' in response.text
+    assert 'User2' in response.text
+
+
+def test_home_page_shows_available_accounts(client, ynab_mocker):
+    response = client.get("/")
+    assert 'value="perso"' in response.text
+    assert 'id="perso-account-type-radio' in response.text
+    assert 'Perso' in response.text
+
+    assert 'value="joint"' in response.text
+    assert 'id="joint-account-type-radio' in response.text
+    assert 'Joint' in response.text
+
+    assert 'value="fancy"' in response.text
+    assert 'id="fancy-account-type-radio' in response.text
+    assert 'Fancy' in response.text
+
+
 def test_submit_csv_displays_correct_info(client, transactions_csv_filepath):
     response = client.post(
         "/csv/upload",
@@ -109,7 +135,7 @@ def test_push_to_ynab_with_perso_account_updates_one_account(
         call_counter += 1
         return call_counter
 
-    mocker.patch("app.main.ynab.push_to_ynab", mock_push_to_ynab)
+    mocker.patch("app.main._push_to_ynab", mock_push_to_ynab)
 
     with client.session_transaction() as session:
         session["transactions"] = [
@@ -157,7 +183,7 @@ def test_push_to_ynab_with_joint_account_updates_two_accounts(
         call_counter += 1
         return call_counter
 
-    mocker.patch("app.main.ynab.push_to_ynab", mock_push_to_ynab)
+    mocker.patch("app.main._push_to_ynab", mock_push_to_ynab)
 
     with client.session_transaction() as session:
         session["transactions"] = [
