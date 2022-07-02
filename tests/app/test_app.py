@@ -681,3 +681,37 @@ def test_db_entry_gets_updated_again_upon_new_adjustment(
         # Moreover, we should not have a "John"-related rule.
         entries = db.get_by_query(lambda data: data["original"] == "John")
         assert len(entries) == 0
+
+
+def test_db_doesnt_get_updated_with_useless_entries(
+    client, ynab_mocker, transactions_csv_filepath, tmpdir, db
+):
+    # Setting up: creating a simple transactions.csv file with only 1 line.
+    header = transactions_csv_filepath.read_text("utf-8").split("\n")[0]
+    line_to_add = '2022-06-09;2022-06-09;"VIR Virement de MONSIEUR";;;-10,00;;0;;0'
+    csv_filepath = tmpdir / "transactions.csv"
+    csv_filepath.write_text("\n".join([header, line_to_add]), encoding="utf-8")
+
+    # At first, no "Monsieur" entry should be in the db.
+    entries = db.get_by_query(lambda data: data["original"] == "Monsieur")
+    assert len(entries) == 0
+
+    # We make a first request where we don't change the value of "Monsieur"
+    with client.session_transaction() as session:
+        response = client.post(
+            "/csv/upload",
+            data={
+                "username": "user1",
+                "account-type": "perso",
+                "transactions-file": csv_filepath.open("rb"),
+            },
+        )
+        assert "Monsieur" in response.text
+
+        response = client.post(
+            "/ynab/push", data={"payee-input-text-0": "Monsieur", "memo-input-text-0": ""}
+        )
+
+        # We still should have no "Monsieur"-related entries in the db.
+        entries = db.get_by_query(lambda data: data["original"] == "Monsieur")
+        assert len(entries) == 0
