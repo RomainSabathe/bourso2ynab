@@ -28,7 +28,8 @@ def app(tmpdir):
 
 
 @pytest.fixture()
-def client(app):
+def client(app, db):
+    # db is imported to make sure we mock the db.
     return app.test_client()
 
 

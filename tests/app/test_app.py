@@ -1,9 +1,8 @@
 import shutil
-import functools
+from pathlib import Path
 from datetime import date
 
 from flask import session
-import flask.json as flask_json
 
 from bourso2ynab.ynab import get_ynab_id
 from bourso2ynab.transaction import Transaction
@@ -606,3 +605,79 @@ def test_db_doesnt_get_updated_when_original_payee_is_empty(client, ynab_mocker,
     assert len(db.get_all()) == 2
     entries = db.get_by_query(lambda data: data["original"] == "")
     assert len(entries) == 0
+
+
+def test_db_entry_gets_updated_again_upon_new_adjustment(
+    client, ynab_mocker, transactions_csv_filepath, tmpdir, db
+):
+    # Setting up: creating a simple transactions.csv file with only 1 line.
+    header = transactions_csv_filepath.read_text("utf-8").split("\n")[0]
+    line_to_add = '2022-06-09;2022-06-09;"VIR Virement de MONSIEUR";;;-10,00;;0;;0'
+    csv_filepath = tmpdir / "transactions.csv"
+    csv_filepath.write_text("\n".join([header, line_to_add]), encoding="utf-8")
+
+    # At first, no "Monsieur" entry should be in the db.
+    entries = db.get_by_query(lambda data: data["original"] == "Monsieur")
+    assert len(entries) == 0
+
+    # Step 1: we make a first request where we change "Monsieur" into "John".
+    with client.session_transaction() as session:
+        response = client.post(
+            "/csv/upload",
+            data={
+                "username": "user1",
+                "account-type": "perso",
+                "transactions-file": csv_filepath.open("rb"),
+            },
+        )
+        assert "Monsieur" in response.text
+
+        # Changing "Monsieur" into "John".
+        response = client.post(
+            "/ynab/push", data={"payee-input-text-0": "John", "memo-input-text-0": ""}
+        )
+
+        # Checking the impact on the db.
+        entries = db.get_by_query(lambda data: data["original"] == "Monsieur")
+        assert len(entries) == 1
+        key = list(entries.keys())[0]
+        entry = entries[key]
+        assert entry["original"] == "Monsieur"
+        assert entry["adjusted"] == "John"
+
+    # Step 2: we make a new request where we change the entry into "David"
+    # Now, it's tricky:
+    #  - The initial csv contains the name "Monsieur".
+    #  - The HTML form should display "John" because the DB contains a Monsieur --> John rule.
+    #  - However, upon changing to "David", the DB should now contain a Monsieur --> David rule.
+    with client.session_transaction() as session:
+        # The initial csv contains the name "Monsieur"
+        response = client.post(
+            "/csv/upload",
+            data={
+                "username": "user1",
+                "account-type": "perso",
+                "transactions-file": csv_filepath.open("rb"),
+            },
+        )
+        # The HTML form should display "John" because the DB contains
+        # a Monsieur --> John rule.
+        assert "John" in response.text
+        assert "Monsieur" not in response.text
+
+        # Changing "Monsieur" into "David".
+        response = client.post(
+            "/ynab/push", data={"payee-input-text-0": "David", "memo-input-text-0": ""}
+        )
+
+        # The DB should now contain a Monsieur --> David rule.
+        entries = db.get_by_query(lambda data: data["original"] == "Monsieur")
+        assert len(entries) == 1
+        key = list(entries.keys())[0]
+        entry = entries[key]
+        assert entry["original"] == "Monsieur"
+        assert entry["adjusted"] == "David"
+
+        # Moreover, we should not have a "John"-related rule.
+        entries = db.get_by_query(lambda data: data["original"] == "John")
+        assert len(entries) == 0

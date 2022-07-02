@@ -40,11 +40,11 @@ def upload_csv():
     df = read_bourso_transactions(filepath=csv_file.stream)
     transactions = [Transaction.from_pandas(row) for _, row in df.iterrows()]
     transactions = sorted(transactions, key=lambda x: x.date)
-    transactions = _update_transactions_based_on_db(transactions)
     session["transactions"] = transactions
 
+    transactions_to_display = _update_transactions_based_on_db(transactions)
     html_table = transactions_to_html(
-        transactions, with_table_tag=False, editable=True, with_title=True
+        transactions_to_display, with_table_tag=False, editable=True, with_title=True
     )
 
     return render_template("review_transactions.html", table=html_table)
