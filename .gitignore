@@ -1,4 +1,6 @@
 secrets.json
+db.json
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -52,6 +54,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+cov.xml
 
 # Translations
 *.mo
