@@ -16,7 +16,7 @@ from bourso2ynab.ynab import push_to_ynab, get_ynab_id
 @click.option(
     "-u",
     "username",
-    type=click.Choice(["romain", "ginette"], case_sensitive=True),
+    type=click.Choice(["romain", "marianne"], case_sensitive=True),
     required=True,
 )
 @click.option(
