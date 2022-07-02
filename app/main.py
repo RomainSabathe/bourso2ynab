@@ -1,6 +1,7 @@
 from typing import List
 from copy import deepcopy
 
+from loguru import logger
 from werkzeug.datastructures import ImmutableMultiDict
 from flask import Blueprint, render_template, request, session
 
@@ -20,6 +21,7 @@ bp = Blueprint("main", __name__, url_prefix="/")
 
 @bp.route("/", methods=["GET"])
 def main():
+    logger.debug("Loading frontpage")
     return render_template(
         "submit_csv.html",
         usernames=get_all_available_usernames(),
@@ -69,7 +71,14 @@ def push_to_ynab():
         account_id = get_ynab_id(id_type="account", **kwargs)
         budget_id = get_ynab_id(id_type="budget", **kwargs)
 
+        logger.debug(f"Pushing transactions to YNAB")
+        logger.debug(f"{username=}")
+        logger.debug(f"{account_type=}")
+        logger.debug(f"{updated_transactions=}")
         result = _push_to_ynab(updated_transactions, account_id, budget_id)
+
+        logger.debug(f"Transactions pushed.")
+        logger.debug(f"{result=}")
 
     return render_template("confirmation.html", result=result)
 
@@ -115,8 +124,10 @@ def _update_db_based_on_transactions_changes(
                 lambda data: data["original"] == old.payee
             )
             if not existing_entries:
+                logger.info(f"Adding a new entry in the DB: {old.payee} --> {new.payee}")
                 db.add({"original": old.payee, "adjusted": new.payee})
             else:
+                logger.info(f"Updating an entry in the DB: {old.payee} --> {new.payee}")
                 key = list(existing_entries.keys())[0]
                 db.update_by_id(key, {"adjusted": new.payee})
 
