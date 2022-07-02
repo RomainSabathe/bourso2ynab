@@ -104,6 +104,12 @@ def _update_db_based_on_transactions_changes(
     transactions: List[Transaction], updated_transactions: List[Transaction]
 ):
     for old, new in zip(transactions, updated_transactions):
+        if old.payee == "":
+            # We don't want to update the DB based on an empty field.
+            # This typically happens in case of VIRs from unknown senders.
+            # It wouldn't make sense to hardcode this in the db.
+            continue
+
         if old.payee != new.payee:
             existing_entries = db.get_by_query(
                 lambda data: data["original"] == old.payee

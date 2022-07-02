@@ -24,26 +24,26 @@ def test_home_page_shows_available_users(client, ynab_mocker):
     response = client.get("/")
     assert 'value="user1"' in response.text
     assert 'id="user1-username-radio' in response.text
-    assert 'User1' in response.text
+    assert "User1" in response.text
 
     assert 'value="user2"' in response.text
     assert 'id="user2-username-radio' in response.text
-    assert 'User2' in response.text
+    assert "User2" in response.text
 
 
 def test_home_page_shows_available_accounts(client, ynab_mocker):
     response = client.get("/")
     assert 'value="perso"' in response.text
     assert 'id="perso-account-type-radio' in response.text
-    assert 'Perso' in response.text
+    assert "Perso" in response.text
 
     assert 'value="joint"' in response.text
     assert 'id="joint-account-type-radio' in response.text
-    assert 'Joint' in response.text
+    assert "Joint" in response.text
 
     assert 'value="fancy"' in response.text
     assert 'id="fancy-account-type-radio' in response.text
-    assert 'Fancy' in response.text
+    assert "Fancy" in response.text
 
 
 def test_submit_csv_displays_correct_info(client, transactions_csv_filepath):
@@ -575,3 +575,34 @@ def test_update_transactions_based_on_db(db):
 
     assert transactions[1].memo is None
     assert updated_transactions[1].memo is None
+
+
+def test_db_doesnt_get_updated_when_original_payee_is_empty(client, ynab_mocker, db):
+    with client.session_transaction() as session:
+        session["transactions"] = [
+            Transaction(
+                type="CARTE",
+                amount=-12.34,
+                date=date(year=1970, month=1, day=1),
+                payee="",
+                memo="This is a memo",
+            )
+        ]
+        session["username"] = "user1"
+        session["account-type"] = "perso"
+
+    assert len(db.get_all()) == 2  # Initial content of the DB.
+
+    response = client.post(
+        "/ynab/push",
+        data={"payee-input-text-0": "John", "memo-input-text-0": "This is a memo"},
+    )
+
+    # The result should still be a success.
+    assert "All done!" in response.text
+    assert "This is a memo" in response.text
+
+    # We shouldn't have a new entry.
+    assert len(db.get_all()) == 2
+    entries = db.get_by_query(lambda data: data["original"] == "")
+    assert len(entries) == 0
