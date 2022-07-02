@@ -73,7 +73,7 @@ def push_to_ynab(transactions: List[Transaction], account_id: str, budget_id: st
                 payee_name=transaction.payee,
                 memo=transaction.memo,
                 approved=True,
-                cleared="cleared",
+                cleared="uncleared",
                 import_id=transaction.import_id,
             )
             for transaction in transactions

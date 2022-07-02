@@ -74,5 +74,5 @@ def test_push_to_ynab(mocker):
     assert returned_transactions[2]["import_id"] == "YNAB:20000:1971-01-01:2"
 
     assert returned_transactions[0]["approved"] == True
-    assert returned_transactions[0]["cleared"] == "cleared"
+    assert returned_transactions[0]["cleared"] == "uncleared"
     assert returned_transactions[0]["payee_name"] == "TestUser1"
