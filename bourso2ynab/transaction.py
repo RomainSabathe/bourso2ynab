@@ -48,6 +48,7 @@ class Transaction:
 
     @staticmethod
     def from_pandas(row: pd.Series, format: bool = True):
+        row = populate_dates(row)
         if not is_valid_bourso_entry(row):
             raise InvalidBoursoTransaction
         if not format:
@@ -188,6 +189,16 @@ class Transaction:
         formated_date = self.date.strftime("%Y-%m-%d")
 
         return f"YNAB:{amount_in_mili_currency_str}:{formated_date}:{self.index}"
+
+
+def populate_dates(row: pd.Series) -> pd.Series:
+    """For some transactions, the `dateVal` is set to NaN whilst the `dateOp` is valid.
+    bourso2ynab primarily uses `dateVal`. As a quick bypass, we populate the `dateVal`
+    field with the content of `dateOp`."""
+    if "dateOp" in row.keys() and "dateVal" in row.keys():
+        if pd.isnull(row["dateVal"]) and not pd.isnull(row["dateOp"]):
+            row["dateVal"] = row["dateOp"]
+    return row
 
 
 def format_payee_from_label(payee: Optional[str], is_VIR: bool) -> Optional[str]:

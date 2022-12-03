@@ -1,6 +1,7 @@
 from datetime import date
 
 import pytest
+import numpy as np
 import pandas as pd
 
 from bourso2ynab.transaction import (
@@ -577,3 +578,15 @@ def test_from_flask_json_partial():
     )
 
     assert expected_transaction == Transaction.from_flask_json(input)
+
+def test_read_transaction_with_no_dateval():
+    entry = pd.Series(
+        {"dateVal": np.nan, "dateOp": "2022-12-01", "amount": "-12,34", "label": "CARTE 01/12/22 AMAZON PAYMEN PARIS FR"}
+    )
+    transaction = Transaction.from_pandas(entry, format=True)
+
+    assert transaction.date == date(year=2022, month=12, day=1)
+    assert transaction.amount == -12.34
+    assert transaction.payee == "Amazon Paymen Paris Fr"
+    assert transaction.memo is None
+    assert transaction.type == "CARTE"
