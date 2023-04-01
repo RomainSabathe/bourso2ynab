@@ -9,7 +9,11 @@ from ynab_api.api.transactions_api import TransactionsApi
 from ynab_api.model.save_transaction import SaveTransaction
 from ynab_api.model.save_transactions_wrapper import SaveTransactionsWrapper
 
-from bourso2ynab.transaction import Transaction, make_import_ids_unique
+from bourso2ynab.transaction import (
+    Transaction,
+    make_import_ids_unique,
+    remove_future_transactions,
+)
 
 
 def get_ynab_id(
@@ -64,6 +68,10 @@ def push_to_ynab(transactions: List[Transaction], account_id: str, budget_id: st
     api = TransactionsApi(ynab.ApiClient(configuration))
 
     transactions = make_import_ids_unique(transactions)
+    # The YNAB API doesn't accept transactions that are dated in the future.
+    # We still want to submit all transactions that are dated in the past though,
+    # so we filter the future transactions out.
+    transactions = remove_future_transactions(transactions)
     ynab_transactions = SaveTransactionsWrapper(
         transactions=[
             SaveTransaction(

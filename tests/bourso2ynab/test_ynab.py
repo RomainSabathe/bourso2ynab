@@ -76,3 +76,43 @@ def test_push_to_ynab(mocker):
     assert returned_transactions[0]["approved"] == True
     assert returned_transactions[0]["cleared"] == "uncleared"
     assert returned_transactions[0]["payee_name"] == "TestUser1"
+
+
+def test_push_to_ynab_filter_out_future_transactions(mocker):
+    transactions = [
+        Transaction(
+            type="CARTE",
+            date=date(year=1970, month=1, day=1),
+            amount=10.0,
+            payee="TestUser1",
+            memo="Test1",
+        ),
+        Transaction(
+            type="CARTE",
+            date=date(year=2023, month=4, day=3),
+            amount=20.0,
+            payee="TestUser3",
+            memo="Test3",
+        ),
+    ]
+    today = date(year=2023, month=4, day=1)
+
+    def mock_create_transaction(
+        self, budget_id: str, transactions: SaveTransactionsWrapper, **kwargs
+    ):
+        return transactions.to_dict()["transactions"]
+
+    os.environ["YNAB_API_KEY"] = "1234"
+    mocker.patch(
+        "bourso2ynab.ynab.TransactionsApi.create_transaction", mock_create_transaction
+    )
+
+    returned_transactions = push_to_ynab(
+        transactions, account_id="01234", budget_id="1230"
+    )
+
+    assert len(returned_transactions) == 1
+    assert returned_transactions[0]["import_id"] == "YNAB:10000:1970-01-01:1"
+    assert returned_transactions[0]["approved"] == True
+    assert returned_transactions[0]["cleared"] == "uncleared"
+    assert returned_transactions[0]["payee_name"] == "TestUser1"

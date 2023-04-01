@@ -282,6 +282,11 @@ def make_import_ids_unique(transactions: List[Transaction]) -> List[Transaction]
     return new_transactions
 
 
+def remove_future_transactions(transactions: List[Transaction]) -> List[Transaction]:
+    today = datetime.today().date()
+    return [transaction for transaction in transactions if transaction.date <= today]
+
+
 def transactions_to_html(
     transactions: List[Transaction],
     with_table_tag: bool = False,
