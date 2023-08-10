@@ -709,7 +709,8 @@ def test_db_doesnt_get_updated_with_useless_entries(
         assert "Monsieur" in response.text
 
         response = client.post(
-            "/ynab/push", data={"payee-input-text-0": "Monsieur", "memo-input-text-0": ""}
+            "/ynab/push",
+            data={"payee-input-text-0": "Monsieur", "memo-input-text-0": ""},
         )
 
         # We still should have no "Monsieur"-related entries in the db.

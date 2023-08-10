@@ -124,7 +124,9 @@ def _update_db_based_on_transactions_changes(
                 lambda data: data["original"] == old.payee
             )
             if not existing_entries:
-                logger.info(f"Adding a new entry in the DB: {old.payee} --> {new.payee}")
+                logger.info(
+                    f"Adding a new entry in the DB: {old.payee} --> {new.payee}"
+                )
                 db.add({"original": old.payee, "adjusted": new.payee})
             else:
                 logger.info(f"Updating an entry in the DB: {old.payee} --> {new.payee}")

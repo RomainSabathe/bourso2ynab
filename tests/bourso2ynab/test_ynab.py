@@ -6,7 +6,12 @@ from datetime import date
 from ynab_api.model.save_transactions_wrapper import SaveTransactionsWrapper
 
 from bourso2ynab.transaction import Transaction
-from bourso2ynab.ynab import get_all_available_account_types, get_ynab_id, push_to_ynab, get_all_available_usernames
+from bourso2ynab.ynab import (
+    get_all_available_account_types,
+    get_ynab_id,
+    push_to_ynab,
+    get_all_available_usernames,
+)
 
 
 def test_get_ynab_id(ynab_secrets_filepath):
@@ -24,6 +29,7 @@ def test_get_ynab_id(ynab_secrets_filepath):
 def test_get_all_available_usernames(ynab_secrets_filepath):
     usernames = get_all_available_usernames(ynab_secrets_filepath)
     assert usernames == ["user1", "user2"]
+
 
 def test_get_all_available_account_types(ynab_secrets_filepath):
     account_types = get_all_available_account_types(ynab_secrets_filepath)

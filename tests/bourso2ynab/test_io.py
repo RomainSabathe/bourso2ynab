@@ -2,6 +2,7 @@ import pandas as pd
 
 from bourso2ynab.io import read_bourso_transactions
 
+
 def test_read_bourso_transactions(tmpdir):
     lines = [
         "dateOp;dateVal;label;amount;comment",

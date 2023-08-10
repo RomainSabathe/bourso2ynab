@@ -103,8 +103,6 @@ class Transaction:
 
         return Transaction(**formatted_result)
 
-
-
     @staticmethod
     def from_flask_json(entry: str):
         # Only the date has a special formating. So it's the only field we need
