@@ -95,13 +95,12 @@ def test_push_to_ynab_filter_out_future_transactions(mocker):
         ),
         Transaction(
             type="CARTE",
-            date=date(year=2023, month=4, day=3),
+            date=date(year=2099, month=4, day=3),
             amount=20.0,
             payee="TestUser3",
             memo="Test3",
         ),
     ]
-    today = date(year=2023, month=4, day=1)
 
     def mock_create_transaction(
         self, budget_id: str, transactions: SaveTransactionsWrapper, **kwargs
