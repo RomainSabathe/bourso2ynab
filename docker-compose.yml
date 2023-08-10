@@ -10,3 +10,4 @@ services:
       - DB_FILEPATH=db.json
     volumes:
       - ./db.json:/python-docker/db.json
+      - ./secrets.json:/python-docker/secrets.json
