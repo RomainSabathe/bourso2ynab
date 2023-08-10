@@ -40,6 +40,7 @@ def push(filepath: Path, budget_id: str, account_id: str):
     df = read_bourso_transactions(filepath)
     transactions = [Transaction.from_pandas(row) for _, row in df.iterrows()]
     result = push_to_ynab(transactions, account_id=account_id, budget_id=budget_id)
+    print(result)
 
 
 if __name__ == "__main__":
