@@ -1,5 +1,9 @@
 secrets.json
+# Usual names I use for the database during tests.
 db.json
+testdb
+# For pyenv
+.python-version
 
 
 # Byte-compiled / optimized / DLL files
