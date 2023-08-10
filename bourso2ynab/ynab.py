@@ -62,7 +62,7 @@ def get_all_available_account_types(
 
 
 def push_to_ynab(transactions: List[Transaction], account_id: str, budget_id: str):
-    configuration = ynab.Configuration()
+    configuration = ynab.Configuration(host="https://api.ynab.com/v1")
     configuration.api_key["bearer"] = os.environ["YNAB_API_KEY"]
     configuration.api_key_prefix["bearer"] = "Bearer"
     api = TransactionsApi(ynab.ApiClient(configuration))
