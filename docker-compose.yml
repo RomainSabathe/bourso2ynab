@@ -1,9 +1,12 @@
 version: "3.9"
 services:
-  server:
-    build: .
+  bourso2ynab:
+    image: bourso2ynab
+    container_name: bourso2ynab
     ports:
-      - "5000:5000"
+      - "1000:5000"
     env_file: .env
+    environment:
+      - DB_FILEPATH=db.json
     volumes:
       - ./db.json:/python-docker/db.json
