@@ -135,8 +135,8 @@ class Transaction:
                     "<tr>",
                     "<th>Date</th>",
                     "<th>Amount</th>",
-                    "<th>Payee</th>",
-                    "<th>Memo</th>",
+                    "<th style='width: 30%;'>Payee</th>",
+                    "<th style='width: 50%;'>Memo</th>",
                     "</tr>",
                 ]
             )
@@ -153,6 +153,7 @@ class Transaction:
                 'type="text"',
                 f'name="{name}-input-text-{position}"',
                 f'value="{content}"',
+                'style="width: 100%; box-sizing: border-box;"',
                 ">",
                 "</td>",
             ]
@@ -297,6 +298,6 @@ def transactions_to_html(
     ]
 
     if with_table_tag:
-        lines = ["<table>", *lines, "</table>"]
+        lines = ["<table style='width: 100%; table-layout: fixed;'>", *lines, "</table>"]
 
     return "\n".join(lines)
