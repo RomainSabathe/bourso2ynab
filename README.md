@@ -9,7 +9,7 @@ This project is inspired from the wonderful [Fintech to YNAB](https://github.com
 
 - Download a CSV of your Boursobank transactions and upload them to the service.
 - The file content will be converted to a YNAB-friendly format.
-- Bourso2YNAB remembers the name of your previous payees. For instance, it will automatically convert "VELIB METROPOLE PARIS FR" into the friendlier "Vélib" (as long as you done this renaming yourself once).
+- Bourso2YNAB remembers the name of your previous payees. For instance, it will automatically convert "VELIB METROPOLE PARIS FR" into the friendlier "Vélib" (as long as you've done this renaming yourself once before).
 - The data is send to your YNAB account. No need to enter the data manually anymore!
 
 The data processing is completely local. No telemetry or data is sent anywhere besides to YNAB itself.
