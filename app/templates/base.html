@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-<html>
-  <body>
-    <h1>Bourso2Ynab</h1>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Bourso2YNAB</title>
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+    <body>
+      <h1>Bourso2YNAB</h1>
 
-    <div style="display: block; width: 100%">
-      <div style="width: 40%; float: left; display: inline-block">
-        {% block left_side %} {% endblock %}
-      </div>
+      {% block content %} {% endblock %}
 
-      <div style="width: 20%; float: left; display: inline-block"></div>
-
-      <div style="width: 40%; float: left; display: inline-block">
-        {% block right_side %} {% endblock %}
-      </div>
-    </div>
-  </body>
+    </body>
 </html>

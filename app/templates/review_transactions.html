@@ -1,4 +1,4 @@
-{% extends 'base.html' %} {% block left_side %}
+{% extends 'base.html' %} {% block content %}
 
 <form
   action="{{ url_for('main.push_to_ynab') }}"
@@ -10,7 +10,7 @@
   </table>
 
   <br />
-  <input type="submit" id="push-to-ynab-button-bottom" />
+  <input type="submit" id="push-to-ynab-button-bottom" value="Send to YNAB" />
 </form>
 
-{% endblock %} {% block right_side %} {% endblock %}
+{% endblock %}

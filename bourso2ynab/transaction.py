@@ -133,10 +133,10 @@ class Transaction:
             lines.extend(
                 [
                     "<tr>",
-                    "<th>Date</th>",
-                    "<th>Amount</th>",
-                    "<th style='width: 30%;'>Payee</th>",
-                    "<th style='width: 50%;'>Memo</th>",
+                    "<th class='date'>Date</th>",
+                    "<th class='amount'>Amount</th>",
+                    "<th class='payee'>Payee</th>",
+                    "<th class='memo'>Memo</th>",
                     "</tr>",
                 ]
             )
@@ -145,26 +145,48 @@ class Transaction:
             if not editable:
                 return [html_row]
 
-            re_match = re.match(r"^<td>(?P<content>.*?)</td>$", html_row)
+            re_match = re.match(
+                r"^<td class='(?P<klass>.*)'>(?P<content>.*?)</td>$", html_row
+            )
             content = re_match.group("content")
-            return [
-                "<td>",
-                "<input ",
-                'type="text"',
-                f'name="{name}-input-text-{position}"',
-                f'value="{content}"',
-                'style="width: 100%; box-sizing: border-box;"',
-                ">",
-                "</td>",
-            ]
+            klass = re_match.group("klass")
+
+            to_return = [f"<td class='{klass}'>"]
+            # The "payee" field is editable with a simple input field.
+            # The "memo" field can be longer, so we use a textarea.
+            if name == "payee":
+                to_return.extend(
+                    [
+                        "<input type='text'",
+                        f'name="{name}-input-text-{position}"',
+                        f'value="{content}"',
+                        ">",
+                    ]
+                )
+            elif name == "memo":
+                to_return.extend(
+                    [
+                        "<textarea ",
+                        f'name="{name}-input-text-{position}">',
+                        content,
+                        "</textarea>",
+                    ]
+                )
+
+            to_return.append("</td>")
+            return to_return
 
         lines.extend(
             [
                 "<tr>",
-                f"<td>{formatted_date}</td>",
-                f"<td>{formatted_amount}</td>",
-                *maybe_to_editable(f"<td>{formatted_payee}</td>", name="payee"),
-                *maybe_to_editable(f"<td>{formatted_memo}</td>", name="memo"),
+                f"<td class='date'>{formatted_date}</td>",
+                f"<td class='amount'>{formatted_amount} €</td>",
+                *maybe_to_editable(
+                    f"<td class='payee'>{formatted_payee}</td>", name="payee"
+                ),
+                *maybe_to_editable(
+                    f"<td class='memo'>{formatted_memo}</td>", name="memo"
+                ),
                 "</tr>",
             ]
         )
@@ -298,6 +320,6 @@ def transactions_to_html(
     ]
 
     if with_table_tag:
-        lines = ["<table style='width: 100%; table-layout: fixed;'>", *lines, "</table>"]
+        lines = ["<table>", *lines, "</table>"]
 
     return "\n".join(lines)

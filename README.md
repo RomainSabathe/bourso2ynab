@@ -1,5 +1,18 @@
 # bourso2ynab
-Utility to easily import Boursorama transactions into YNAB.
+Utility to easily import Boursobank transactions (formally Boursorama) into YNAB.
+
+![Bourso2YNAB "Review Transaction" page](imgs/review_transactions.png "Easily import your Bourso transactions into YNAB")
+
+### How it works
+
+This project is inspired from the wonderful [Fintech to YNAB](https://github.com/syncforynab/fintech-to-ynab) repo. I was a happy user until I moved to France and had to stop using Monzo.
+
+- Download a CSV of your Boursobank transactions and upload them to the service.
+- The file content will be converted to a YNAB-friendly format.
+- Bourso2YNAB remembers the name of your previous payees. For instance, it will automatically convert "VELIB METROPOLE PARIS FR" into the friendlier "Vélib" (as long as you done this renaming yourself once).
+- The data is send to your YNAB account. No need to enter the data manually anymore!
+
+The data processing is completely local. No telemetry or data is sent anywhere besides to YNAB itself.
 
 ## Deployment
 
@@ -28,9 +41,9 @@ APP_SECRET_KEY=YOUR_APP_SECRET_KEY
 }
 ```  
 
-If an account has a name "joint" then everytime one user uploads transactions with this account, the transactions are actually impacting _all_ users. This is useful for joint accounts.
+If an account has a name "joint" then everytime one user uploads transactions with this account, the transactions are actually impacting _all_ users. This is useful for joint accounts, assuming the owners of the joint account are using the same YNAB account.
 
-3. Create an empty `db.json` file. This file will be used to store the name of the payees as they appear in Bourso and their corresponding mapping.
+3. Create an empty `db.json` file. This file will be used to store the name of the payees as they appear in Bourso (e.g. "VELIB METROPOLE PARIS FR") and their renamed counterpart (e.g. "Vélib").
 4. Edit the `docker-compose.yml` so it fits your needs (ports, volumes, etc.)
 5. Build and run the container:
 ```bash

@@ -1,3 +1,4 @@
+.env
 secrets.json
 # Usual names I use for the database during tests.
 db.json
