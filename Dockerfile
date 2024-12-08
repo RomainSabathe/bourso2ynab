@@ -1,18 +1,19 @@
-FROM python:3.10.1-slim-buster
+FROM python:3.12-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends git && \
+    apt-get install -y --no-install-recommends git curl && \
     apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
-WORKDIR /python-docker
+WORKDIR /bourso2ynab
 
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+COPY uv.lock pyproject.toml .
+RUN /root/.local/bin/uv sync --frozen
 
 COPY . .
 
-# CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
-CMD [ "gunicorn", "-b" , "0.0.0.0:5000", "app:create_app()"]
+# CMD /root/.local/bin/uv run python3 -m flask run --host=0.0.0.0
+CMD /root/.local/bin/uv run gunicorn -b 0.0.0.0:5000 "app:create_app()"

@@ -1,7 +1,7 @@
-version: "3.9"
 services:
   bourso2ynab:
     image: bourso2ynab
+    network_mode: host
     container_name: bourso2ynab
     ports:
       - "1000:5000"
@@ -9,5 +9,5 @@ services:
     environment:
       - DB_FILEPATH=db.json
     volumes:
-      - ./db.json:/python-docker/db.json
-      - ./secrets.json:/python-docker/secrets.json
+      - ./db.json:/bourso2ynab/db.json
+      - ./secrets.json:/bourso2ynab/secrets.json

@@ -19,6 +19,7 @@ dependencies = [
     "ruff>=0.8.1",
     "selenium>=4.26.1",
     "ynab-api",
+    "gunicorn>=23.0.0",
 ]
 
 [tool.uv.sources]
