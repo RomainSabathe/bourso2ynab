@@ -1,4 +1,5 @@
 from copy import deepcopy
+from pprint import pformat
 from typing import List
 
 from flask import Blueprint, render_template, request, session
@@ -116,7 +117,9 @@ def push_to_actual():
     logger.debug("Transactions pushed.")
     logger.debug(f"{result=}")
 
-    return render_template("confirmation.html", result=result)
+    # We use pprint because `result` is a list of large dictionnaries, and we want to
+    # make the output digestible for the user.
+    return render_template("confirmation.html", result=pformat(result))
 
 
 def _get_transactions_from_session() -> List[Transaction]:

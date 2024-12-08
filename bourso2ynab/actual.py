@@ -7,11 +7,15 @@ from actual.queries import create_transaction, get_account
 from bourso2ynab.transaction import Transaction, make_import_ids_unique
 
 
-def push_to_actual(transactions: list[Transaction], file_uuid: str, account_name: str):
+def push_to_actual(
+    transactions: list[Transaction], file_uuid: str, account_name: str
+) -> list[dict[str, str]]:
     """
     file_uuid: corresponds to the "Budget" in YNAB terms. Each user is mapped to one
         file_uuid.
     account_name: corresponds to the 'account' in YNAB terms.
+
+    Returns the list of pushed transactions as dict.
 
     """
     if "ACTUAL_SERVER_URL" not in os.environ:
@@ -52,4 +56,9 @@ def push_to_actual(transactions: list[Transaction], file_uuid: str, account_name
         ]
         actual.commit()
 
-        return pushed_transactions
+        # I have no clue why, but it seems that for the "model_dump" to produce
+        # non-empty dictionnaries, we must 'force' one of the entries of the transaction
+        # to be computed. That's what I do in the following line.
+        [transaction.amount for transaction in pushed_transactions]
+
+        return [transaction.model_dump() for transaction in pushed_transactions]
