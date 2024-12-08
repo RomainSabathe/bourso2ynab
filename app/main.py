@@ -95,27 +95,27 @@ def push_to_actual():
     _update_db_based_on_transactions_changes(transactions, updated_transactions)
 
     # Retrieving Actual credentials.
-    # account_type = session["account-type"]
-    # usernames = [session["username"]]
-    # if account_type == "joint":
-    #     usernames = get_all_available_usernames()
-    #
-    # for username in usernames:
-    #     kwargs = {"username": username, "account_type": account_type}
-    #     account_id = get_ynab_id(id_type="account", **kwargs)
-    #     budget_id = get_ynab_id(id_type="budget", **kwargs)
+    account_type = session["account-type"]
+    username = session["username"]
 
-    file_uuid = "c4cf2015-e42f-4c60-a262-2785e3505555"
-    account_name = "Bourso"
+    # Registering multiple usernames in case of a joint account.
+    usernames = [username]  # default.
+    if account_type.lower() == "joint":
+        usernames = get_all_available_usernames()
 
-    logger.debug("Pushing transactions to Actual")
-    # logger.debug(f"{username=}")
-    # logger.debug(f"{account_type=}")
-    logger.debug(f"{updated_transactions=}")
-    result = _push_to_actual(updated_transactions, file_uuid, account_name)
+    for username in usernames:
+        kwargs = {"username": username, "account_type": account_type}
+        account_name = get_ynab_id(id_type="account", **kwargs)
+        file_uuid = get_ynab_id(id_type="budget", **kwargs)
 
-    logger.debug("Transactions pushed.")
-    logger.debug(f"{result=}")
+        logger.debug("Pushing transactions to Actual")
+        logger.debug(f"{username=}")
+        logger.debug(f"{account_type=}")
+        logger.debug(f"{updated_transactions=}")
+        result = _push_to_actual(updated_transactions, file_uuid, account_name)
+
+        logger.debug("Transactions pushed.")
+        logger.debug(f"{result=}")
 
     # We use pprint because `result` is a list of large dictionnaries, and we want to
     # make the output digestible for the user.
