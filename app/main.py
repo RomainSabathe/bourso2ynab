@@ -1,20 +1,20 @@
-from typing import List
 from copy import deepcopy
+from typing import List
 
+from flask import Blueprint, render_template, request, session
 from loguru import logger
 from werkzeug.datastructures import ImmutableMultiDict
-from flask import Blueprint, render_template, request, session
 
 from app.database import db
-
+from bourso2ynab.actual import push_to_actual as _push_to_actual
+from bourso2ynab.io import read_bourso_transactions
+from bourso2ynab.transaction import Transaction, transactions_to_html
 from bourso2ynab.ynab import (
-    get_all_available_usernames,
     get_all_available_account_types,
+    get_all_available_usernames,
     get_ynab_id,
 )
 from bourso2ynab.ynab import push_to_ynab as _push_to_ynab
-from bourso2ynab.io import read_bourso_transactions
-from bourso2ynab.transaction import Transaction, transactions_to_html
 
 bp = Blueprint("main", __name__, url_prefix="/")
 
@@ -50,7 +50,7 @@ def upload_csv():
     return render_template("review_transactions.html", table=html_table)
 
 
-@bp.route("/ynab/push", methods=["POST"])
+@bp.route("/old/ynab/push", methods=["POST"])
 def push_to_ynab():
     # Retrieving Transactions.
     transactions = _get_transactions_from_session()
@@ -71,14 +71,50 @@ def push_to_ynab():
         account_id = get_ynab_id(id_type="account", **kwargs)
         budget_id = get_ynab_id(id_type="budget", **kwargs)
 
-        logger.debug(f"Pushing transactions to YNAB")
+        logger.debug("Pushing transactions to YNAB")
         logger.debug(f"{username=}")
         logger.debug(f"{account_type=}")
         logger.debug(f"{updated_transactions=}")
         result = _push_to_ynab(updated_transactions, account_id, budget_id)
 
-        logger.debug(f"Transactions pushed.")
+        logger.debug("Transactions pushed.")
         logger.debug(f"{result=}")
+
+    return render_template("confirmation.html", result=result)
+
+
+@bp.route("/ynab/push", methods=["POST"])
+def push_to_actual():
+    # Retrieving Transactions.
+    transactions = _get_transactions_from_session()
+
+    updated_transactions = _update_transactions_based_on_form(
+        transactions, request.form
+    )
+    _update_db_based_on_transactions_changes(transactions, updated_transactions)
+
+    # Retrieving Actual credentials.
+    # account_type = session["account-type"]
+    # usernames = [session["username"]]
+    # if account_type == "joint":
+    #     usernames = get_all_available_usernames()
+    #
+    # for username in usernames:
+    #     kwargs = {"username": username, "account_type": account_type}
+    #     account_id = get_ynab_id(id_type="account", **kwargs)
+    #     budget_id = get_ynab_id(id_type="budget", **kwargs)
+
+    file_uuid = "c4cf2015-e42f-4c60-a262-2785e3505555"
+    account_name = "Bourso"
+
+    logger.debug("Pushing transactions to Actual")
+    # logger.debug(f"{username=}")
+    # logger.debug(f"{account_type=}")
+    logger.debug(f"{updated_transactions=}")
+    result = _push_to_actual(updated_transactions, file_uuid, account_name)
+
+    logger.debug("Transactions pushed.")
+    logger.debug(f"{result=}")
 
     return render_template("confirmation.html", result=result)
 

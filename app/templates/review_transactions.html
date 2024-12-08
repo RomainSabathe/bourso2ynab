@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% block content %}
 
 <form
-  action="{{ url_for('main.push_to_ynab') }}"
+  action="{{ url_for('main.push_to_actual') }}"
   method="post"
   enctype="multipart/form-data"
 >
@@ -10,7 +10,7 @@
   </table>
 
   <br />
-  <input type="submit" id="push-to-ynab-button-bottom" value="Send to YNAB" />
+  <input type="submit" id="push-to-ynab-button-bottom" value="Send to Actual" />
 </form>
 
 {% endblock %}

@@ -8,6 +8,12 @@ from bourso2ynab.transaction import Transaction, make_import_ids_unique
 
 
 def push_to_actual(transactions: list[Transaction], file_uuid: str, account_name: str):
+    """
+    file_uuid: corresponds to the "Budget" in YNAB terms. Each user is mapped to one
+        file_uuid.
+    account_name: corresponds to the 'account' in YNAB terms.
+
+    """
     if "ACTUAL_SERVER_URL" not in os.environ:
         raise KeyError(
             "Missing a 'ACTUAL_SERVER_URL' var from your environment variables"
@@ -27,11 +33,11 @@ def push_to_actual(transactions: list[Transaction], file_uuid: str, account_name
         if account is None:
             raise KeyError(f"Could not find Actual account with name {account_name}")
 
-        # TODO: check if the transactions exits before pushing them.
+        # TODO: check if the transactions exist before pushing them.
         # Ideally, this should happen at the stage of the transactions upload
         # (i.e. after submitting the csv)
         transactions = make_import_ids_unique(transactions)
-        for transaction in transactions:
+        pushed_transactions = [
             create_transaction(
                 s=actual.session,
                 date=transaction.date,
@@ -42,4 +48,8 @@ def push_to_actual(transactions: list[Transaction], file_uuid: str, account_name
                 imported_id=str(transaction.index),
                 cleared=True,
             )
+            for transaction in transactions
+        ]
         actual.commit()
+
+        return pushed_transactions
