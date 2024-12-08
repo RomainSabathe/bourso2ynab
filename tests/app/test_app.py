@@ -1,21 +1,20 @@
 import shutil
-from pathlib import Path
 from datetime import date
 
 from flask import session
 
-from bourso2ynab.ynab import get_ynab_id
-from bourso2ynab.transaction import Transaction
 from app.main import (
+    _update_db_based_on_transactions_changes,
     _update_transactions_based_on_db,
     _update_transactions_based_on_form,
-    _update_db_based_on_transactions_changes,
 )
+from bourso2ynab.transaction import Transaction
 
 
 def test_display_home_page(client):
     response = client.get("/")
-    assert "<h1>Bourso2Ynab</h1>" in response.text
+    assert "<title>Bourso2YNAB</title>" in response.text
+    assert "<h1>Bourso2YNAB</h1>" in response.text
     assert "Select your Boursorama transactions" in response.text
 
 
@@ -56,8 +55,8 @@ def test_submit_csv_displays_correct_info(client, transactions_csv_filepath):
     )
 
     assert "<table>" in response.text
-    assert "<td>2022/06/13</td>" in response.text
-    assert "<td>2022/06/11</td>" in response.text
+    assert "<td class='date'>2022/06/13</td>" in response.text
+    assert "<td class='date'>2022/06/11</td>" in response.text
     assert 'value="Ratp"' in response.text
 
 

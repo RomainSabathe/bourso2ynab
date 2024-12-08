@@ -52,18 +52,6 @@ wheels = [
 ]
 
 [[package]]
-name = "beautifultable"
-version = "1.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "wcwidth" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/86/a6/8aa4b731d0d53bd375411cb846e938028d7dda234d4966324d2e8f240588/beautifultable-1.1.0.tar.gz", hash = "sha256:040bc987444965678f4ffdfa2f17ac357f1a13e5875b161c9a1899b375319d17", size = 40190 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/47/b6a0dcf1b55866e27492a59c250a8bc36cd4bdb95c2ecc76878cf18a21b8/beautifultable-1.1.0-py2.py3-none-any.whl", hash = "sha256:b34053a581976c4c23064bb0e918a7f6f22273cf196c787946db323a6a2b7d84", size = 28630 },
-]
-
-[[package]]
 name = "blinker"
 version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -83,10 +71,13 @@ dependencies = [
     { name = "ipython" },
     { name = "loguru" },
     { name = "pandas" },
-    { name = "pysondb" },
+    { name = "pysondb-v2" },
     { name = "pytest" },
+    { name = "pytest-env" },
+    { name = "pytest-mock" },
     { name = "python-dotenv" },
     { name = "selenium" },
+    { name = "ynab-api" },
 ]
 
 [package.metadata]
@@ -97,10 +88,13 @@ requires-dist = [
     { name = "ipython", specifier = ">=8.29.0" },
     { name = "loguru", specifier = ">=0.7.2" },
     { name = "pandas", specifier = ">=2.2.3" },
-    { name = "pysondb", specifier = ">=1.6.7" },
+    { name = "pysondb-v2", specifier = ">=2.2.0" },
     { name = "pytest", specifier = ">=8.3.3" },
+    { name = "pytest-env", specifier = ">=1.1.5" },
+    { name = "pytest-mock", specifier = ">=3.14.0" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "selenium", specifier = ">=4.26.1" },
+    { name = "ynab-api", git = "https://github.com/dmlerner/ynab-api.git?rev=nullfix" },
 ]
 
 [[package]]
@@ -250,15 +244,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/8c/e3/7d45f492c2c4a0e8e0fad57d081a7c8a0286cdd86372b070cca1ec0caa1e/executing-2.1.0.tar.gz", hash = "sha256:8ea27ddd260da8150fa5a708269c4a10e76161e2496ec3e587da9e3c0fe4b9ab", size = 977485 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b5/fd/afcd0496feca3276f509df3dbd5dae726fcc756f1a08d9e25abe1733f962/executing-2.1.0-py2.py3-none-any.whl", hash = "sha256:8d63781349375b5ebccc3142f4b30350c0cd9c79f921cde38be2be4637e98eaf", size = 25805 },
-]
-
-[[package]]
-name = "filelock"
-version = "3.16.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9d/db/3ef5bb276dae18d6ec2124224403d1d67bccdbefc17af4cc8f553e341ab1/filelock-3.16.1.tar.gz", hash = "sha256:c249fbfcd5db47e5e2d6d62198e565475ee65e4831e2561c8e313fa7eb961435", size = 18037 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b9/f8/feced7779d755758a52d1f6635d990b8d98dc0a29fa568bbe0625f18fdf3/filelock-3.16.1-py3-none-any.whl", hash = "sha256:2082e5703d51fbf98ea75855d9d5527e33d8ff23099bec374a134febee6946b0", size = 16163 },
 ]
 
 [[package]]
@@ -722,16 +707,12 @@ wheels = [
 ]
 
 [[package]]
-name = "pysondb"
-version = "1.6.7"
+name = "pysondb-v2"
+version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "beautifultable" },
-    { name = "filelock" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c6/d7/365937d1c4cce17a73417aa92b169552232c98ad48a85725fdd718863577/pysondb-1.6.7.tar.gz", hash = "sha256:5b5e1ec0507a478a5dae98a735d2dbf26baddc375f752ae2ee6a2474a3d6790e", size = 14179 }
+sdist = { url = "https://files.pythonhosted.org/packages/20/0c/1850a1e6f9c80e275fd228ef26e1c56e8c1107f7bf45facfbbac0a8867a4/pysondb-v2-2.2.0.tar.gz", hash = "sha256:1f5d2d864e5f5d1334d639681199255526ab0c8aa0b4b324462e78aae0e08d10", size = 13865 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/93/a8af71f81777a259420808923dcdfbb1afaf333dcb14ba54cd0ea956359c/pysondb-1.6.7-py3-none-any.whl", hash = "sha256:5891952fe35a59986ece8df4a99ce608d64f5f67798ef63cb5453fbc4e7e89f6", size = 10263 },
+    { url = "https://files.pythonhosted.org/packages/b5/38/78575cfbaec7b8a1bc96d94ee4a2166b4957758b25f25bff80aa48e34764/pysondb_v2-2.2.0-py2.py3-none-any.whl", hash = "sha256:3226ee94b7550e602f7061f68ae64b5d02812153d799b57aa74343f20ed0cd9b", size = 9202 },
 ]
 
 [[package]]
@@ -747,6 +728,30 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8b/6c/62bbd536103af674e227c41a8f3dcd022d591f6eed5facb5a0f31ee33bbc/pytest-8.3.3.tar.gz", hash = "sha256:70b98107bd648308a7952b06e6ca9a50bc660be218d53c257cc1fc94fda10181", size = 1442487 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6b/77/7440a06a8ead44c7757a64362dd22df5760f9b12dc5f11b6188cd2fc27a0/pytest-8.3.3-py3-none-any.whl", hash = "sha256:a6853c7375b2663155079443d2e45de913a911a11d669df02a50814944db57b2", size = 342341 },
+]
+
+[[package]]
+name = "pytest-env"
+version = "1.1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1f/31/27f28431a16b83cab7a636dce59cf397517807d247caa38ee67d65e71ef8/pytest_env-1.1.5.tar.gz", hash = "sha256:91209840aa0e43385073ac464a554ad2947cc2fd663a9debf88d03b01e0cc1cf", size = 8911 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/de/b8/87cfb16045c9d4092cfcf526135d73b88101aac83bc1adcf82dfb5fd3833/pytest_env-1.1.5-py3-none-any.whl", hash = "sha256:ce90cf8772878515c24b31cd97c7fa1f4481cd68d588419fd45f10ecaee6bc30", size = 6141 },
+]
+
+[[package]]
+name = "pytest-mock"
+version = "3.14.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c6/90/a955c3ab35ccd41ad4de556596fa86685bf4fc5ffcc62d22d856cfd4e29a/pytest-mock-3.14.0.tar.gz", hash = "sha256:2719255a1efeceadbc056d6bf3df3d1c5015530fb40cf347c0f9afac88410bd0", size = 32814 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f2/3b/b26f90f74e2986a82df6e7ac7e319b8ea7ccece1caec9f8ab6104dc70603/pytest_mock-3.14.0-py3-none-any.whl", hash = "sha256:0b72c38033392a5f4621342fe11e9219ac11ec9d375f8e2a0c164539e0d70f6f", size = 9863 },
 ]
 
 [[package]]
@@ -1014,4 +1019,13 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c9/4a/44d3c295350d776427904d73c189e10aeae66d7f555bb2feee16d1e4ba5a/wsproto-1.2.0.tar.gz", hash = "sha256:ad565f26ecb92588a3e43bc3d96164de84cd9902482b130d0ddbaa9664a85065", size = 53425 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/78/58/e860788190eba3bcce367f74d29c4675466ce8dddfba85f7827588416f01/wsproto-1.2.0-py3-none-any.whl", hash = "sha256:b9acddd652b585d75b20477888c56642fdade28bdfd3579aa24a4d2c037dd736", size = 24226 },
+]
+
+[[package]]
+name = "ynab-api"
+version = "1.0.0"
+source = { git = "https://github.com/dmlerner/ynab-api.git?rev=nullfix#9d6d72487d21700de128c4bed25c6e9215a7d036" }
+dependencies = [
+    { name = "python-dateutil" },
+    { name = "urllib3" },
 ]

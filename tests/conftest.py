@@ -1,21 +1,20 @@
-import os
-import json
-import socket
 import functools
+import json
+import os
+import socket
 import subprocess
 from pathlib import Path
 
-import pytest
-from flask import request
-from pysondb import PysonDB
 import flask.json as flask_json
+import pytest
 from dotenv import load_dotenv
+from pysondb import PysonDB
 
 from app import create_app
 from bourso2ynab.ynab import (
-    get_ynab_id,
-    get_all_available_usernames,
     get_all_available_account_types,
+    get_all_available_usernames,
+    get_ynab_id,
 )
 
 
@@ -30,6 +29,18 @@ def app(tmpdir):
 @pytest.fixture()
 def client(app, db):
     # db is imported to make sure we mock the db.
+
+    # We also create a dummy "secrets.json" file in case it doesn't already exist.
+    # TODO: this shouldn't be necessary. This means that the test is currently reading
+    # the production secrets.json. This should be a big nono.
+    if not Path("secrets.json").exists():
+        secrets = {
+            "budgets": {"user1": "abcd"},
+            "accounts": {"user1": {"perso": "0123"}},
+        }
+        with Path("secrets.json").open("w") as f:
+            json.dump(secrets, f)
+
     return app.test_client()
 
 

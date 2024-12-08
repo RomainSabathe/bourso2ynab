@@ -1,17 +1,17 @@
 from datetime import date
 
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
 from bourso2ynab.transaction import (
     InvalidBoursoTransaction,
-    UnknownTransactionType,
     Transaction,
+    UnknownTransactionType,
+    format_amount,
     infer_transaction_type,
     is_valid_bourso_entry,
     make_import_ids_unique,
-    format_amount,
     transactions_to_html,
 )
 
@@ -278,12 +278,15 @@ def test_transaction_to_html_non_editable():
         memo="This is a test",
     )
 
+    # TODO: in the future, I should probably add a test that is independant
+    # of the front-end styling choices. Maybe by parsing the content of the
+    # tags directly.
     expected_lines = [
         "<tr>",
-        "<td>1970/01/01</td>",
-        "<td>12.34</td>",
-        "<td>Monsieur</td>",
-        "<td>This is a test</td>",
+        "<td class='date'>1970/01/01</td>",
+        "<td class='amount'>12.34 €</td>",
+        "<td class='payee'>Monsieur</td>",
+        "<td class='memo'>This is a test</td>",
         "</tr>",
     ]
 
@@ -301,16 +304,16 @@ def test_transaction_to_html_non_editable_with_title():
 
     expected_lines = [
         "<tr>",
-        "<th>Date</th>",
-        "<th>Amount</th>",
-        "<th>Payee</th>",
-        "<th>Memo</th>",
+        "<th class='date'>Date</th>",
+        "<th class='amount'>Amount</th>",
+        "<th class='payee'>Payee</th>",
+        "<th class='memo'>Memo</th>",
         "</tr>",
         "<tr>",
-        "<td>1970/01/01</td>",
-        "<td>12.34</td>",
-        "<td>Monsieur</td>",
-        "<td>This is a test</td>",
+        "<td class='date'>1970/01/01</td>",
+        "<td class='amount'>12.34 €</td>",
+        "<td class='payee'>Monsieur</td>",
+        "<td class='memo'>This is a test</td>",
         "</tr>",
     ]
 
@@ -328,21 +331,19 @@ def test_transaction_to_html_editable():
 
     expected_lines = [
         "<tr>",
-        "<td>1970/01/01</td>",
-        "<td>12.34</td>",
-        "<td>",
-        "<input ",
-        'type="text"',
+        "<td class='date'>1970/01/01</td>",
+        "<td class='amount'>12.34 €</td>",
+        "<td class='payee'>",
+        "<input type='text'",
         'name="payee-input-text-0"',
         'value="Monsieur"',
         ">",
         "</td>",
-        "<td>",
-        "<input ",
-        'type="text"',
-        'name="memo-input-text-0"',
-        'value="This is a test"',
-        ">",
+        "<td class='memo'>",
+        "<textarea ",
+        'name="memo-input-text-0">',
+        "This is a test",
+        "</textarea>",
         "</td>",
         "</tr>",
     ]
@@ -368,10 +369,10 @@ def test_transaction_to_html_with_empty_fields():
 
     expected_lines = [
         "<tr>",
-        "<td>1970/01/01</td>",
-        "<td></td>",
-        "<td>Monsieur</td>",
-        "<td></td>",
+        "<td class='date'>1970/01/01</td>",
+        "<td class='amount'> €</td>",
+        "<td class='payee'>Monsieur</td>",
+        "<td class='memo'></td>",
         "</tr>",
     ]
 
@@ -394,16 +395,16 @@ def test_transactions_to_html_non_editable():
 
     lines = [
         "<tr>",
-        "<td>1970/01/01</td>",
-        "<td></td>",
-        "<td>Monsieur</td>",
-        "<td></td>",
+        "<td class='date'>1970/01/01</td>",
+        "<td class='amount'> €</td>",
+        "<td class='payee'>Monsieur</td>",
+        "<td class='memo'></td>",
         "</tr>",
         "<tr>",
-        "<td>1971/01/01</td>",
-        "<td></td>",
-        "<td>Madame</td>",
-        "<td></td>",
+        "<td class='date'>1971/01/01</td>",
+        "<td class='amount'> €</td>",
+        "<td class='payee'>Madame</td>",
+        "<td class='memo'></td>",
         "</tr>",
     ]
 
@@ -427,16 +428,16 @@ def test_transactions_to_html_non_editable_with_table_tag():
     lines = [
         "<table>",
         "<tr>",
-        "<td>1970/01/01</td>",
-        "<td></td>",
-        "<td>Monsieur</td>",
-        "<td></td>",
+        "<td class='date'>1970/01/01</td>",
+        "<td class='amount'> €</td>",
+        "<td class='payee'>Monsieur</td>",
+        "<td class='memo'></td>",
         "</tr>",
         "<tr>",
-        "<td>1971/01/01</td>",
-        "<td></td>",
-        "<td>Madame</td>",
-        "<td></td>",
+        "<td class='date'>1971/01/01</td>",
+        "<td class='amount'> €</td>",
+        "<td class='payee'>Madame</td>",
+        "<td class='memo'></td>",
         "</tr>",
         "</table>",
     ]
@@ -462,42 +463,39 @@ def test_transactions_to_html_editable():
 
     lines = [
         "<tr>",
-        "<td>1970/01/01</td>",
-        "<td></td>",
-        "<td>",
-        "<input ",
-        'type="text"',
+        "<td class='date'>1970/01/01</td>",
+        "<td class='amount'> €</td>",
+        "<td class='payee'>",
+        "<input type='text'",
         'name="payee-input-text-0"',
         'value="Monsieur"',
         ">",
         "</td>",
-        "<td>",
-        "<input ",
-        'type="text"',
-        'name="memo-input-text-0"',
-        'value=""',
-        ">",
+        "<td class='memo'>",
+        "<textarea ",
+        'name="memo-input-text-0">',
+        "",
+        "</textarea>",
         "</td>",
         "</tr>",
         "<tr>",
-        "<td>1971/01/01</td>",
-        "<td></td>",
-        "<td>",
-        "<input ",
-        'type="text"',
+        "<td class='date'>1971/01/01</td>",
+        "<td class='amount'> €</td>",
+        "<td class='payee'>",
+        "<input type='text'",
         'name="payee-input-text-1"',
         'value="Madame"',
         ">",
         "</td>",
-        "<td>",
-        "<input ",
-        'type="text"',
-        'name="memo-input-text-1"',
-        'value=""',
-        ">",
+        "<td class='memo'>",
+        "<textarea ",
+        'name="memo-input-text-1">',
+        "",
+        "</textarea>",
         "</td>",
         "</tr>",
     ]
+    print(transactions_to_html(transactions, editable=True))
 
     assert "\n".join(lines) == transactions_to_html(transactions, editable=True)
 
@@ -518,22 +516,22 @@ def test_transactions_to_html_with_title():
 
     lines = [
         "<tr>",
-        "<th>Date</th>",
-        "<th>Amount</th>",
-        "<th>Payee</th>",
-        "<th>Memo</th>",
+        "<th class='date'>Date</th>",
+        "<th class='amount'>Amount</th>",
+        "<th class='payee'>Payee</th>",
+        "<th class='memo'>Memo</th>",
         "</tr>",
         "<tr>",
-        "<td>1970/01/01</td>",
-        "<td></td>",
-        "<td>Monsieur</td>",
-        "<td></td>",
+        "<td class='date'>1970/01/01</td>",
+        "<td class='amount'> €</td>",
+        "<td class='payee'>Monsieur</td>",
+        "<td class='memo'></td>",
         "</tr>",
         "<tr>",
-        "<td>1971/01/01</td>",
-        "<td></td>",
-        "<td>Madame</td>",
-        "<td></td>",
+        "<td class='date'>1971/01/01</td>",
+        "<td class='amount'> €</td>",
+        "<td class='payee'>Madame</td>",
+        "<td class='memo'></td>",
         "</tr>",
     ]
 
