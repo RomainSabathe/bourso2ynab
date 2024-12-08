@@ -1,3 +1,18 @@
-[tool.pytest.ini_options]
-sensitive_url = "example.com"
-addopts = "--cov=bourso2ynab --cov-report xml:coverage.xml"
+[project]
+name = "bourso2actual"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "actualpy>=0.7.0",
+    "flask>=3.1.0",
+    "ipdb>=0.13.13",
+    "ipython>=8.29.0",
+    "loguru>=0.7.2",
+    "pandas>=2.2.3",
+    "pysondb>=1.6.7",
+    "pytest>=8.3.3",
+    "python-dotenv>=1.0.1",
+    "selenium>=4.26.1",
+]
