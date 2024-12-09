@@ -1,7 +1,6 @@
 .env
-secrets.json
-# Usual names I use for the database during tests.
-db.json
+# Would include secrets.json, db.json, etc
+*.json
 testdb
 # For pyenv
 .python-version

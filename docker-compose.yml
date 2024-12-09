@@ -1,7 +1,6 @@
 services:
   bourso2ynab:
     image: bourso2ynab
-    network_mode: host
     container_name: bourso2ynab
     ports:
       - "1000:5000"
