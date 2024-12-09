@@ -595,3 +595,45 @@ def test_read_transaction_with_no_dateval():
     assert transaction.payee == "Amazon Paymen Paris Fr"
     assert transaction.memo is None
     assert transaction.type == "CARTE"
+
+
+def test_sorting():
+    t1 = Transaction(
+        type="CARTE",
+        amount=-12.34,
+        date=date(year=1970, month=1, day=1),
+        payee="Monsieur",
+        memo="This is a memo",
+    )
+    # Date in the future
+    t2 = Transaction(
+        type="CARTE",
+        amount=-12.34,
+        date=date(year=1971, month=1, day=1),
+        payee="Monsieur",
+        memo="This is a memo",
+    )
+    # larger amount
+    t3 = Transaction(
+        type="CARTE",
+        amount=-1.23,
+        date=date(year=1971, month=1, day=1),
+        payee="Monsieur",
+        memo="This is a memo",
+    )
+    # Payee name is "after" in the alphabet.
+    t4 = Transaction(
+        type="CARTE",
+        amount=-1.23,
+        date=date(year=1971, month=1, day=1),
+        payee="ZZZ",
+        memo="This is a memo",
+    )
+
+    transactions = [t4, t3, t2, t1]
+    sorted_transactions = sorted(transactions)
+
+    assert sorted_transactions[0] == t1
+    assert sorted_transactions[1] == t2
+    assert sorted_transactions[2] == t3
+    assert sorted_transactions[3] == t4

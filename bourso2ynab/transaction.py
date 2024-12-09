@@ -1,8 +1,7 @@
 import re
-import json
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Literal, Union, Optional, List
+from typing import List, Literal, Optional, Union
 
 import pandas as pd
 
@@ -39,12 +38,40 @@ TRANSACTION_LABEL_PROG = re.compile(TRANSACTION_LABEL_PATTERN)
 
 @dataclass
 class Transaction:
-    type: TransactionType
+    type: TransactionType | None
     date: date
-    amount: float = None
-    payee: str = None
-    memo: str = None
+    amount: float | None = None
+    payee: str | None = None
+    memo: str | None = None
     index: int = 1  # Used to avoid importing duplicated transactions
+
+    # We implement equality and comparison based on a limited number of attributes. These
+    # criteria might seem odd but align with how YNAB identifies duplicated
+    # transactions: based on amount and date only. That's actually how the 'index' is
+    # implemented.
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Transaction):
+            raise ValueError(
+                "Can't compare a Transaction with a non Transaction object"
+            )
+        return self.amount == other.amount and self.date == other.date
+
+    # For comparison, we add a extra sorting dimension on the payee name.
+    def __lt__(self, other: "Transaction") -> bool:
+        # Each value is wrapped in a tuple: (priority, value)
+        # None becomes (0, None)
+        # Regular values become (1, value)
+        self_tuple = (
+            (1, self.date) if self.date is not None else (0, None),
+            (1, self.amount) if self.amount is not None else (0, None),
+            (1, self.payee) if self.payee is not None else (0, None),
+        )
+        other_tuple = (
+            (1, other.date) if other.date is not None else (0, None),
+            (1, other.amount) if other.amount is not None else (0, None),
+            (1, other.payee) if other.payee is not None else (0, None),
+        )
+        return self_tuple < other_tuple
 
     @staticmethod
     def from_pandas(row: pd.Series, format: bool = True):
