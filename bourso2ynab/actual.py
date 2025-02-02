@@ -5,10 +5,12 @@ from datetime import date
 from actual import Actual, get_ruleset
 from actual.database import Transactions as ActualTransaction
 from actual.queries import create_transaction, get_account
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from bourso2ynab.transaction import Transaction, make_import_ids_unique
 
 
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
 def push_to_actual(
     transactions: list[Transaction], file_uuid: str, account_name: str
 ) -> list[dict[str, str]]:

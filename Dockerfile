@@ -16,4 +16,4 @@ RUN /root/.local/bin/uv sync --frozen
 COPY . .
 
 # CMD /root/.local/bin/uv run python3 -m flask run --host=0.0.0.0
-CMD /root/.local/bin/uv run gunicorn -b 0.0.0.0:5000 "app:create_app()"
+CMD /root/.local/bin/uv run gunicorn -b 0.0.0.0:5000 --timeout 120 "app:create_app()"
