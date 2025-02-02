@@ -2,7 +2,7 @@ import decimal
 import os
 from datetime import date
 
-from actual import Actual
+from actual import Actual, get_ruleset
 from actual.database import Transactions as ActualTransaction
 from actual.queries import create_transaction, get_account
 
@@ -56,6 +56,11 @@ def push_to_actual(
             )
             for transaction in transactions
         ]
+        # Applying the ruleset (e.g. if payee_name == 'Tesco' then assign the category
+        # 'Groceries'). The rules are defined in the frontend of Actual.
+        ruleset = get_ruleset(actual.session)
+        for t in pushed_transactions:
+            ruleset.run(t)
         actual.commit()
 
         # I have no clue why, but it seems that for the "model_dump" to produce

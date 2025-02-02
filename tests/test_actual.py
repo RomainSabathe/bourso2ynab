@@ -31,6 +31,24 @@ def test_create_transaction():
     )
 
 
+def test_run_rules():
+    transactions = [
+        Transaction(
+            type="CARTE",
+            date=date(year=2024, month=11, day=15),
+            amount=10.53,
+            payee="Tesco",
+            memo="This should be mapped to the Food category",
+        )
+    ]
+
+    pushed_transactions = push_to_actual(
+        transactions,
+        file_uuid="c4cf2015-e42f-4c60-a262-2785e3505555",
+        account_name="Bourso",
+    )
+
+
 def test_convert_transaction_from_actual():
     # This is the reflection of a full Transaction as provided by Actual API.
     actual_transaction = ActualTransaction(
