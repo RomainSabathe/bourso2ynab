@@ -45,7 +45,21 @@
 
   <br />
 
-  <input id="submit-csv-button" type="submit" value="Upload transactions" />
+  <div class="button-group">
+    <button 
+      id="submit-csv-button" 
+      type="submit"
+    >
+      Send to Actual
+    </button>
+    <button 
+      id="resolve-transactions-button" 
+      type="submit" 
+      formaction="{{ url_for('main.resolve_transactions_view') }}"
+    >
+      Resolve transactions
+    </button>
+  </div>
 </form>
 
 {% endblock %} {% block right_side %}
