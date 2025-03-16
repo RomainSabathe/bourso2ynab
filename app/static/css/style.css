@@ -1,8 +1,10 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
+    margin: 0 auto;
+    padding: 0 2rem;
     background-color: #f4f4f4;
     color: #333;
+    max-width: 1400px;
 }
 
 table {
@@ -77,4 +79,102 @@ tr:hover {
     td textarea {
         width: 100%;
     }
+}
+
+/* Two-column layout */
+.two-column-layout {
+    display: flex;
+    gap: 4rem;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+.column {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Transaction tables */
+.missing-transactions-container {
+    width: 100%;
+}
+
+.transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background-color: #fff;
+}
+
+.transactions-table th,
+.transactions-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.transactions-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    color: #333;
+}
+
+.amount {
+    font-family: monospace;
+    text-align: right;
+}
+
+.amount.negative {
+    color: #dc3545;
+}
+
+.amount.positive {
+    color: #28a745;
+}
+
+.empty-state {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+.help-text {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+/* Action buttons container */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Return home link */
+.return-home {
+    color: #333;
+    text-decoration: none;
+}
+
+.return-home:hover {
+    text-decoration: underline;
+}
+
+/* Refresh button */
+.refresh-form {
+    margin: 0;
+}
+
+.refresh-button {
+    background: none;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    font-size: 1em;
+    padding: 0;
+}
+
+.refresh-button:hover {
+    text-decoration: underline;
 }

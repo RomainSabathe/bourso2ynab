@@ -1,17 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% block above_columns %}{% endblock %}
 
-<div style="display: block; width: 100%">
-    <div style="width: 40%; float: left; display: inline-block">
-    {% block left_side %} {% endblock %}
+<div class="two-column-layout">
+    <div class="column left-column">
+        {% block left_side %} {% endblock %}
     </div>
 
-    <div style="width: 20%; float: left; display: inline-block"></div>
-
-    <div style="width: 40%; float: left; display: inline-block">
-    {% block right_side %} {% endblock %}
+    <div class="column right-column">
+        {% block right_side %} {% endblock %}
     </div>
 </div>
-
 {% endblock %}
