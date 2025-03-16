@@ -1,0 +1,78 @@
+{% extends 'base_2_columns.html' %}
+
+{% block above_columns %}
+<div class="action-buttons">
+    <a href="{{ url_for('main.main') }}" class="return-home">← Return to Upload</a>
+    <form action="{{ url_for('main.refresh_resolve_view') }}" method="post" class="refresh-form">
+        <button type="submit" class="refresh-button">↻ Refresh</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block left_side %}
+<div class="missing-transactions-container">
+    <h2>Missing from Boursorama</h2>
+    <p class="help-text">These transactions exist in Actual but not in your Boursorama export.</p>
+    
+    <table class="transactions-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Payee</th>
+                <th>Amount</th>
+                <th>Memo</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for transaction in missing_from_local %}
+            <tr>
+                <td>{{ transaction.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ transaction.payee }}</td>
+                <td class="amount {% if transaction.amount < 0 %}negative{% else %}positive{% endif %}">
+                    {{ "%.2f"|format(transaction.amount) }}€
+                </td>
+                <td>{{ transaction.memo }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4" class="empty-state">No missing transactions found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block right_side %}
+<div class="missing-transactions-container">
+    <h2>Missing from Actual</h2>
+    <p class="help-text">These transactions exist in your Boursorama export but not in Actual.</p>
+    
+    <table class="transactions-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Payee</th>
+                <th>Amount</th>
+                <th>Memo</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for transaction in missing_from_remote %}
+            <tr>
+                <td>{{ transaction.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ transaction.payee }}</td>
+                <td class="amount {% if transaction.amount < 0 %}negative{% else %}positive{% endif %}">
+                    {{ "%.2f"|format(transaction.amount) }}€
+                </td>
+                <td>{{ transaction.memo }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4" class="empty-state">No missing transactions found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

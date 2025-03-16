@@ -7,8 +7,10 @@ from loguru import logger
 from werkzeug.datastructures import ImmutableMultiDict
 
 from app.database import db
+from bourso2ynab.actual import get_actual_transactions
 from bourso2ynab.actual import push_to_actual as _push_to_actual
 from bourso2ynab.io import read_bourso_transactions
+from bourso2ynab.resolve import resolve_transactions
 from bourso2ynab.transaction import Transaction, transactions_to_html
 from bourso2ynab.ynab import (
     get_all_available_account_types,
@@ -120,6 +122,65 @@ def push_to_actual():
     # We use pprint because `result` is a list of large dictionnaries, and we want to
     # make the output digestible for the user.
     return render_template("confirmation.html", result=pformat(result))
+
+
+@bp.route("/resolve", methods=["POST"])
+def resolve_transactions_view():
+    # Populating the session with the results from the form.
+    for key in ["username", "account-type"]:
+        session[key] = request.form[key]
+
+    # Reading and saving the content of the csv file.
+    csv_file = request.files["transactions-file"]
+    df = read_bourso_transactions(filepath=csv_file.stream)
+    local_transactions = [Transaction.from_pandas(row) for _, row in df.iterrows()]
+
+    # Store transactions in session
+    session["transactions"] = [t.__dict__ for t in local_transactions]
+
+    return _show_resolve_view(local_transactions)
+
+
+@bp.route("/resolve/refresh", methods=["POST"])
+def refresh_resolve_view():
+    # Get stored transactions from session using the existing helper
+    local_transactions = _get_transactions_from_session()
+    return _show_resolve_view(local_transactions)
+
+
+def _show_resolve_view(local_transactions: List[Transaction]):
+    """Helper function to show the resolve view with given local transactions."""
+    # Get account details based on form selection
+    username = session["username"]
+    account_type = session["account-type"]
+    kwargs = {"username": username, "account_type": account_type}
+    account_name = get_ynab_id(id_type="account", **kwargs)
+    file_uuid = get_ynab_id(id_type="budget", **kwargs)
+
+    try:
+        # Use the earliest date from local transactions as the start date
+        start_date = min(t.date for t in local_transactions)
+        remote_transactions = get_actual_transactions(
+            file_uuid=file_uuid,
+            account_name=account_name,
+            start_date=start_date,
+        )
+
+        # Compare transactions
+        missing_transactions = resolve_transactions(
+            remote_transactions=remote_transactions,
+            local_transactions=local_transactions,
+        )
+
+        return render_template(
+            "resolve.html",
+            missing_from_local=missing_transactions["missing_from_local"],
+            missing_from_remote=missing_transactions["missing_from_remote"],
+        )
+
+    except Exception as e:
+        logger.error(f"Error processing file: {str(e)}")
+        return render_template("error.html", error=str(e))
 
 
 def _get_transactions_from_session() -> List[Transaction]:
