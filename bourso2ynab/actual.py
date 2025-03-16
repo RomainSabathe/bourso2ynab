@@ -4,7 +4,7 @@ from datetime import date
 
 from actual import Actual, get_ruleset
 from actual.database import Transactions as ActualTransaction
-from actual.queries import create_transaction, get_account
+from actual.queries import create_transaction, get_account, get_transactions, get_payees
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from bourso2ynab.transaction import Transaction, make_import_ids_unique
@@ -73,7 +73,10 @@ def push_to_actual(
         return [transaction.model_dump() for transaction in pushed_transactions]
 
 
-def convert_transaction_from_actual(transaction: ActualTransaction) -> Transaction:
+def convert_transaction_from_actual(
+    transaction: ActualTransaction,
+    payee_id_to_name: dict[str | None, str | None] | None = None,
+) -> Transaction:
     # Parsing the date. The Actual date is an int with 4 + 2 + 2 digits corresponding
     # to the year, month and day.
     date_str = str(transaction.date)
@@ -89,6 +92,12 @@ def convert_transaction_from_actual(transaction: ActualTransaction) -> Transacti
     # directly. For now we will keep it as is.
     # TODO: provide support for reading the database and retrieving the payee name.
     transaction_payee = transaction.payee_id
+    if (
+        payee_id_to_name is not None
+        and transaction.payee_id is not None
+        and transaction.payee_id in payee_id_to_name.keys()
+    ):
+        transaction_payee = payee_id_to_name[transaction.payee_id]
 
     # Parsing the index. I don't have a proper way of doing this at the moment, so it'll
     # only be a best guess.
@@ -104,3 +113,48 @@ def convert_transaction_from_actual(transaction: ActualTransaction) -> Transacti
         memo=transaction.notes,
         index=transaction_index,
     )
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
+def get_actual_transactions(
+    file_uuid: str,
+    account_name: str,
+    start_date: date | None = None,
+) -> list[Transaction]:
+    """Fetches transactions from Actual for a given account and date range.
+
+    Args:
+        file_uuid: The Actual budget file UUID
+        account_name: Name of the account to fetch transactions from
+        start_date: Start date for transaction fetch (inclusive). If None, all transactions
+            will be fetched.
+
+    Returns:
+        List of transactions converted to the common Transaction format
+    """
+    if "ACTUAL_SERVER_URL" not in os.environ:
+        raise KeyError("Missing a 'ACTUAL_SERVER_URL' var from your environment variables")
+    if "ACTUAL_PASSWORD" not in os.environ:
+        raise KeyError("Missing a 'ACTUAL_PASSWORD' var from your environment variables")
+
+    with Actual(
+        base_url=os.environ["ACTUAL_SERVER_URL"],
+        password=os.environ["ACTUAL_PASSWORD"],
+        file=file_uuid,
+        cert=False,
+    ) as actual:
+        actual_transactions = get_transactions(
+            actual.session,
+            account=account_name,
+            start_date=start_date,
+        )
+        
+        # Get payee names for better display
+        payees = get_payees(actual.session)
+        payee_id_to_name = {payee.id: payee.name for payee in payees}
+        
+        # Convert to our transaction format
+        return [
+            convert_transaction_from_actual(t, payee_id_to_name)
+            for t in actual_transactions
+        ]
