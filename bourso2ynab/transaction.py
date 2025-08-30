@@ -236,7 +236,9 @@ class Transaction:
         amount_in_mili_currency_str = str(amount_in_mili_currency)
         formated_date = self.date.strftime("%Y-%m-%d")
 
-        return f"YNAB:{amount_in_mili_currency_str}:{formated_date}:{self.index}"
+        # TODO: the index is broken with actual. Will have to fix this.
+        return f"YNAB:{amount_in_mili_currency_str}:{formated_date}"
+        # Previously: return f"YNAB:{amount_in_mili_currency_str}:{formated_date}:{self.index}"
 
 
 def populate_dates(row: pd.Series) -> pd.Series:

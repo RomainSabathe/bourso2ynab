@@ -43,6 +43,55 @@ def upload_csv():
     df = read_bourso_transactions(filepath=csv_file.stream)
     transactions = [Transaction.from_pandas(row) for _, row in df.iterrows()]
     transactions = sorted(transactions, key=lambda x: x.date)
+    duplicate_count = 0  # Initialize duplicate count
+
+    # Check for duplicates against existing transactions in Actual
+    try:
+        # Get account details for fetching remote transactions
+        username = session["username"]
+        account_type = session["account-type"]
+        kwargs = {"username": username, "account_type": account_type}
+        account_name = get_ynab_id(id_type="account", **kwargs)
+        file_uuid = get_ynab_id(id_type="budget", **kwargs)
+
+        # Use earliest date from local transactions as start date
+        start_date = min(t.date for t in transactions)
+        remote_transactions = get_actual_transactions(
+            file_uuid=file_uuid,
+            account_name=account_name,
+            start_date=start_date,
+        )
+
+        # Identify duplicates by comparing import_ids
+        local_import_ids = {t.import_id for t in transactions}
+        remote_import_ids = {t.import_id for t in remote_transactions}
+        duplicate_ids = local_import_ids & remote_import_ids
+        duplicate_count = len(duplicate_ids)
+
+        # Handle case where all transactions are duplicates
+        if duplicate_count == len(transactions):
+            logger.info(f"All {duplicate_count} transactions already exist in Actual")
+            return render_template(
+                "error.html",
+                error="All transactions in the CSV already exist in Actual. No new transactions to process.",
+            )
+
+        # Filter out duplicate transactions
+        if duplicate_count > 0:
+            transactions = [t for t in transactions if t.import_id not in duplicate_ids]
+            logger.info(
+                f"Removed {duplicate_count} duplicate transactions from CSV upload"
+            )
+
+    except Exception as e:
+        logger.error(
+            f"Failed to fetch remote transactions for duplicate detection: {e}"
+        )
+        return render_template(
+            "error.html",
+            error=f"Unable to connect to Actual server to check for duplicates: {str(e)}",
+        )
+
     session["transactions"] = transactions
 
     transactions_to_display = _update_transactions_based_on_db(transactions)
@@ -50,7 +99,9 @@ def upload_csv():
         transactions_to_display, with_table_tag=False, editable=True, with_title=True
     )
 
-    return render_template("review_transactions.html", table=html_table)
+    return render_template(
+        "review_transactions.html", table=html_table, duplicate_count=duplicate_count
+    )
 
 
 @bp.route("/old/ynab/push", methods=["POST"])

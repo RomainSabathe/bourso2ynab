@@ -1,0 +1,10 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="error">
+  <h2>Error</h2>
+  <p>{{ error }}</p>
+  <br />
+  <a href="{{ url_for('main.main') }}">← Back to upload page</a>
+</div>
+
+{% endblock %}
