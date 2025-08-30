@@ -2,10 +2,13 @@ from datetime import date
 
 from actual import Actual
 from actual.database import Transactions as ActualTransaction
-from actual.queries import get_transactions
+from actual.queries import get_payees, get_transactions
 
 from bourso2ynab.actual import convert_transaction_from_actual, push_to_actual
+from bourso2ynab.resolve import resolve_transactions
 from bourso2ynab.transaction import Transaction
+
+
 def test_create_transaction():
     transactions = [
         Transaction(
@@ -19,8 +22,33 @@ def test_create_transaction():
             type="CARTE",
             date=date(year=2024, month=11, day=16),
             amount=20.0,
-            payee="TestUser3",
+            payee="NewUserTest",
             memo="Test3",
+        ),
+    ]
+
+    pushed_transactions = push_to_actual(
+        transactions,
+        file_uuid="c4cf2015-e42f-4c60-a262-2785e3505555",
+        account_name="Bourso",
+    )
+
+
+def test_create_transaction_with_empty_payee_name():
+    transactions = [
+        Transaction(
+            type="CARTE",
+            date=date(year=2024, month=11, day=15),
+            amount=10.53,
+            payee=None,
+            memo="Test1",
+        ),
+        Transaction(
+            type="CARTE",
+            date=date(year=2024, month=11, day=15),
+            amount=1.23,
+            payee="",
+            memo="Test2",
         ),
     ]
 
@@ -82,7 +110,7 @@ def test_convert_transaction_from_actual():
     )
 
     assert converted_transaction.date == date(year=2024, month=12, day=8)
-    assert converted_transaction.amount == 25.12  # Gets swapped
+    assert converted_transaction.amount == -25.12
     assert converted_transaction.payee == "fb42bcb7-297b-4187-b737-75019a4dbd01"
     assert converted_transaction.memo == "Train ticket"
     assert converted_transaction.type is None
