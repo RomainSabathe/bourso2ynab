@@ -76,9 +76,9 @@ def test_can_create_vir_transaction_from_pandas_with_formatting_when_payee_is_no
 
     assert transaction.type == "VIR"
     assert transaction.date == date(year=2022, month=6, day=11)
-    assert transaction.payee is None
+    assert transaction.payee == "Blabla"
     assert transaction.amount == 7.5
-    assert transaction.memo == "Blabla"
+    assert transaction.memo is None
 
 
 def test_create_transaction_from_pandas_fails():
@@ -165,16 +165,7 @@ def test_infer_vir_transaction_from_label():
         ("CARTE 01/01/70 SUMUP *MACO CB*0000", "Maco"),
         ("VIR INST ALAN SA", "Alan"),
         ("PRLV SEPA Bouygues Telecom", "Bouygues Telecom"),
-    ],
-)
-def test_transaction_correctly_parses_label(label, expected_payee):
-    transaction = Transaction.from_label(label)
-    assert transaction.payee == expected_payee
-
-
-@pytest.mark.parametrize(
-    ("label", "expected_memo"),
-    [
+        # Old format VIR transactions (now extract to payee instead of memo)
         ("VIR Loyer", "Loyer"),
         ("VIR Remboursement chasse aux oeufs e", "Remboursement Chasse Aux Oeufs E"),
         ("VIR Splurge :D", "Splurge :D"),
@@ -198,10 +189,9 @@ def test_transaction_correctly_parses_label(label, expected_payee):
         ("Salary Transfer | VIR SEPA PAYROLL COMPANY AC", "Payroll Company Ac"),
     ],
 )
-def test_transaction_correctly_parses_virs(label, expected_memo):
+def test_transaction_correctly_parses_label(label, expected_payee):
     transaction = Transaction.from_label(label)
-    assert transaction.payee is None
-    assert transaction.memo == expected_memo
+    assert transaction.payee == expected_payee
 
 
 def test_transaction_returns_raw_labels_when_failing_to_parse():

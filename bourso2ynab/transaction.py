@@ -122,10 +122,6 @@ class Transaction:
             "type": result["transaction_type"],
         }
 
-        # TODO: add some doc.
-        if is_VIR and formatted_result["payee"] is None:
-            formatted_result["memo"] = result["payee"]
-
         if not is_VIR and result.get("is_paypal") is not None:
             formatted_result["memo"] = "(via Paypal)"
 
@@ -267,11 +263,6 @@ def format_payee_from_label(payee: Optional[str], is_VIR: bool) -> Optional[str]
             # because it is the actual payee name.
             # E.g: "VIR INST 01/01/70 ALAN SA"
             pass
-        else:
-            # In this case, we don't have much information about the payee.
-            # e.g.: "VIR Loyer"
-            # e.g.: "VIR INST Remboursement pour..."
-            return None
 
     return payee.title()
 
