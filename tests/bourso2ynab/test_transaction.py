@@ -176,11 +176,26 @@ def test_transaction_correctly_parses_label(label, expected_payee):
     ("label", "expected_memo"),
     [
         ("VIR Loyer", "Loyer"),
-        ("VIR Remboursement chasse aux oeufs e", "Remboursement chasse aux oeufs e"),
-        # I can't manage to make this to work atm :(
-        # ("VIR Remboursemnt loyer (63) electric", "Remboursment loyer (63) electric"),
+        ("VIR Remboursement chasse aux oeufs e", "Remboursement Chasse Aux Oeufs E"),
         ("VIR Splurge :D", "Splurge :D"),
-        ("VIR Financement pour l'Ours", "Financement pour l'Ours"),
+        ("VIR Financement pour l'Ours", "Financement Pour L'Ours"),
+        # New format: CARTE transactions with prefix
+        ("Restaurant Name | CARTE 01/12/25 RESTAURANT NAME CB*6555", "Restaurant Name"),
+        ("Telecom Provider | PRLV SEPA TELECOM PROVIDER", "Telecom Provider"),
+        ("Store 4 | CARTE 08/12/25 STORE 4 CB*6555", "Store"),
+        ("Bike Share | CARTE 15/12/25 BIKE METROPOLE 2 CB*6555", "Bike Metropole"),
+        ("Booking Service | CARTE 16/12/25 PAYPAL *BOOKING H CB*6555", "Booking H"),
+        ("Tech Service | CARTE 18/12/25 TECH.AI SUBSCRI CB*6555", "Tech.Ai Subscri"),
+        ("Youth Hostel | CARTE 24/12/25 Youth Hostel CB*6555", "Youth Hostel"),
+        ("Event Ticket | CARTE 02/12/25 EVENT* TICKET CB*6555", "Event* Ticket"),
+        ("Shop 601 | CARTE 02/12/25 SHOP 601 CB*6555", "Shop"),
+        # Old format without prefix (backward compatibility)
+        ("CARTE 15/12/25 BIKE METROPOLE 2 CB*6555", "Bike Metropole"),
+        ("CARTE 18/12/25 TECH.AI SUBSCRI CB*6555", "Tech.Ai Subscri"),
+        # New format: VIR transactions with prefix
+        ("Sport Subscription | VIR Sport Subscription", "Sport Subscription"),
+        ("Rent Payment | VIR Rent Payment", "Rent Payment"),
+        ("Salary Transfer | VIR SEPA PAYROLL COMPANY AC", "Payroll Company Ac"),
     ],
 )
 def test_transaction_correctly_parses_virs(label, expected_memo):
