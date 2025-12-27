@@ -10,7 +10,7 @@ RUN rm -rf /var/lib/apt/lists/*
 WORKDIR /bourso2ynab
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-COPY uv.lock pyproject.toml .
+COPY uv.lock pyproject.toml ./
 RUN /root/.local/bin/uv sync --frozen
 
 COPY . .
